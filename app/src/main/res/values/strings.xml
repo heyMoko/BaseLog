@@ -4,12 +4,13 @@
     <string name="splash_subtitle">The app you open first at the ballpark.</string>
     <string name="splash_loading">Checking your session...</string>
     <string name="login_title">Ready for game day</string>
-    <string name="login_body">This login screen already has the structure needed for a real auth flow. Firebase Auth providers can be connected next without rewriting the screen layer.</string>
-    <string name="login_dev_title">Development sign-in entry</string>
-    <string name="login_dev_body">This button currently uses a fake auth repository to update session state. It can be replaced later with Google, Apple, anonymous, or other real providers.</string>
-    <string name="login_cta">Continue with dev sign-in</string>
-    <string name="login_loading">Signing you in...</string>
+    <string name="login_body">Sign in with your Google account to save your BASELOG activity and move between devices without losing your ballpark history.</string>
+    <string name="login_dev_title">Google sign-in</string>
+    <string name="login_dev_body">Sprint 1 uses Firebase Authentication with Google sign-in so the same session flow can ship to production without replacing the screen layer.</string>
+    <string name="login_cta">Continue with Google</string>
+    <string name="login_loading">Signing you in with Google...</string>
     <string name="home_title">Home</string>
     <string name="home_body">Sprint 1 app structure is connected. Real data and authentication can be layered in next.</string>
     <string name="home_status">You reached Home with an active session state.</string>
+    <string name="home_sign_out">Sign out</string>
 </resources>

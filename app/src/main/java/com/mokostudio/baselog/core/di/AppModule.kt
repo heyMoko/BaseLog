@@ -6,11 +6,13 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.preferencesDataStoreFile
 import com.mokostudio.baselog.core.auth.AuthRepository
-import com.mokostudio.baselog.core.auth.FakeAuthRepository
+import com.mokostudio.baselog.core.auth.FirebaseAuthRepository
+import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
 import com.mokostudio.baselog.core.startup.AppStartupRepository
-import com.mokostudio.baselog.core.startup.FakeAuthStateDataSource
 import com.mokostudio.baselog.core.startup.AuthStateDataSource
 import com.mokostudio.baselog.core.startup.DefaultAppStartupRepository
+import com.mokostudio.baselog.core.startup.FirebaseAuthStateDataSource
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -31,19 +33,31 @@ abstract class AppBindModule {
     @Binds
     @Singleton
     abstract fun bindAuthStateDataSource(
-        impl: FakeAuthStateDataSource
+        impl: FirebaseAuthStateDataSource
     ): AuthStateDataSource
 
     @Binds
     @Singleton
     abstract fun bindAuthRepository(
-        impl: FakeAuthRepository
+        impl: FirebaseAuthRepository
     ): AuthRepository
 }
 
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+    @Provides
+    @Singleton
+    fun provideFirebaseApp(
+        @ApplicationContext context: Context
+    ): FirebaseApp? = FirebaseApp.initializeApp(context)
+
+    @Provides
+    @Singleton
+    fun provideFirebaseAuth(firebaseApp: FirebaseApp?): FirebaseAuth? {
+        return firebaseApp?.let(FirebaseAuth::getInstance)
+    }
+
     @Provides
     @Singleton
     fun providePreferencesDataStore(

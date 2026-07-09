@@ -18,9 +18,7 @@ class LoginViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
-    fun signInForDevelopment() {
-        if (_uiState.value.isLoading) return
-
+    fun signInWithGoogleIdToken(idToken: String) {
         viewModelScope.launch {
             _uiState.update {
                 it.copy(
@@ -29,12 +27,11 @@ class LoginViewModel @Inject constructor(
                 )
             }
 
-            authRepository.signInForDevelopment()
+            authRepository.signInWithGoogleIdToken(idToken)
                 .onSuccess {
                     _uiState.update {
                         it.copy(
-                            isLoading = false,
-                            isLoggedIn = true
+                            isLoading = false
                         )
                     }
                 }
@@ -42,10 +39,29 @@ class LoginViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = throwable.message ?: "Login failed. Try again."
+                            errorMessage = throwable.message ?: "Google sign-in failed. Try again."
                         )
                     }
                 }
+        }
+    }
+
+    fun onGoogleSignInFailed(throwable: Throwable) {
+        _uiState.update {
+            it.copy(
+                isLoading = false,
+                errorMessage = throwable.message ?: "Google sign-in failed. Try again."
+            )
+        }
+    }
+
+    fun onGoogleSignInStarted() {
+        if (_uiState.value.isLoading) return
+        _uiState.update {
+            it.copy(
+                isLoading = true,
+                errorMessage = null
+            )
         }
     }
 }

@@ -15,28 +15,29 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
 import com.mokostudio.baselog.R
 
 @Composable
 fun LoginRoute(
-    onContinueClick: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-    LaunchedEffect(uiState.isLoggedIn) {
-        if (uiState.isLoggedIn) {
-            onContinueClick()
-        }
-    }
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val googleIdTokenProvider = rememberGoogleIdTokenProvider()
+    val serverClientId = stringResource(id = R.string.default_web_client_id)
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -45,13 +46,22 @@ fun LoginRoute(
         LoginScreen(
             innerPadding = innerPadding,
             uiState = uiState,
-            onContinueClick = viewModel::signInForDevelopment
+            onContinueClick = {
+                coroutineScope.launch {
+                    viewModel.onGoogleSignInStarted()
+                    googleIdTokenProvider.requestIdToken(
+                        context = context,
+                        serverClientId = serverClientId
+                    ).onSuccess(viewModel::signInWithGoogleIdToken)
+                        .onFailure(viewModel::onGoogleSignInFailed)
+                }
+            }
         )
     }
 }
 
 @Composable
-private fun LoginScreen(
+internal fun LoginScreen(
     innerPadding: PaddingValues,
     uiState: LoginUiState,
     onContinueClick: () -> Unit
@@ -109,7 +119,10 @@ private fun LoginScreen(
                 enabled = !uiState.isLoading
             ) {
                 if (uiState.isLoading) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(18.dp),
                             strokeWidth = 2.dp,
@@ -123,4 +136,9 @@ private fun LoginScreen(
             }
         }
     }
+}
+
+@Composable
+private fun rememberGoogleIdTokenProvider(): GoogleIdTokenProvider {
+    return remember { GoogleIdTokenProvider() }
 }

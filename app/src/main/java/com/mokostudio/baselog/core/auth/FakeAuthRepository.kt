@@ -11,7 +11,7 @@ class FakeAuthRepository @Inject constructor(
 ) : AuthRepository {
     override fun observeAuthenticated() = authSessionStore.observeAuthenticated()
 
-    override suspend fun signInForDevelopment(): Result<Unit> {
+    override suspend fun signInWithGoogleIdToken(idToken: String): Result<Unit> {
         delay(800L)
         authSessionStore.updateAuthenticated(true)
         userPreferencesDataSource.setOnboardingCompleted(completed = true)

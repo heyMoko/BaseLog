@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "680853161213",
+    "project_id": "baselog-e10f9",
+    "storage_bucket": "baselog-e10f9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:680853161213:android:e4922b9cc4b4e69f5b2a94",
+        "android_client_info": {
+          "package_name": "com.mokostudio.baselog"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "680853161213-ur1shm1kpg0ml56s4cpgd0j7jmj5sdso.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mokostudio.baselog",
+            "certificate_hash": "3802970455f127882a1513efbf1b8814cb16ff85"
+          }
+        },
+        {
+          "client_id": "680853161213-4jjh6hf70gf7c11ph5kk8g8ebr71kn0s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCmsvrI9nXykha-b63q8nDSXT1uupgT2nw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "680853161213-4jjh6hf70gf7c11ph5kk8g8ebr71kn0s.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
