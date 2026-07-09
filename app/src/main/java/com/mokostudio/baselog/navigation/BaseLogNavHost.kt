@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.mokostudio.baselog.core.startup.StartupDestination
 import com.mokostudio.baselog.feature.auth.login.LoginRoute
 import com.mokostudio.baselog.feature.home.HomeRoute
 import com.mokostudio.baselog.feature.splash.SplashRoute
@@ -22,8 +23,12 @@ fun BaseLogNavHost(
     ) {
         composable(BaseLogDestination.Splash.route) {
             SplashRoute(
-                onSplashFinished = {
-                    navController.navigate(BaseLogDestination.Login.route) {
+                onNavigationReady = { destination ->
+                    val route = when (destination) {
+                        StartupDestination.Login -> BaseLogDestination.Login.route
+                        StartupDestination.Home -> BaseLogDestination.Home.route
+                    }
+                    navController.navigate(route) {
                         popUpTo(BaseLogDestination.Splash.route) {
                             inclusive = true
                         }

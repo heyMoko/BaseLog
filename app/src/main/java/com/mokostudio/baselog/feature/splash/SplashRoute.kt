@@ -10,26 +10,31 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mokostudio.baselog.R
-import kotlinx.coroutines.delay
-
-private const val SplashDelayMillis = 1200L
+import com.mokostudio.baselog.core.startup.StartupDestination
 
 @Composable
 fun SplashRoute(
-    onSplashFinished: () -> Unit,
-    modifier: Modifier = Modifier
+    onNavigationReady: (StartupDestination) -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: SplashViewModel = hiltViewModel()
 ) {
-    LaunchedEffect(Unit) {
-        // Replace this delay with auth/session bootstrap in Sprint 1 integration work.
-        delay(SplashDelayMillis)
-        onSplashFinished()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(uiState) {
+        val state = uiState
+        if (state is SplashUiState.Ready) {
+            onNavigationReady(state.destination)
+        }
     }
 
     Column(
@@ -50,7 +55,10 @@ fun SplashRoute(
             color = MaterialTheme.colorScheme.onBackground
         )
         Text(
-            text = stringResource(id = R.string.splash_subtitle),
+            text = when (uiState) {
+                SplashUiState.Loading -> stringResource(id = R.string.splash_loading)
+                is SplashUiState.Ready -> stringResource(id = R.string.splash_subtitle)
+            },
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
