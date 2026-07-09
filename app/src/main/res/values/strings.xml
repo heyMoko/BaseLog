@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">BaseLog</string>
+    <string name="splash_title">BASELOG</string>
+    <string name="splash_subtitle">야구장에 가면 가장 먼저 켜는 앱</string>
+    <string name="login_title">직관을 시작할 준비</string>
+    <string name="login_body">Firebase Auth와 DataStore가 붙기 전까지 사용하는 임시 로그인 화면입니다.</string>
+    <string name="login_cta">임시로 홈 진입</string>
+    <string name="home_title">Home</string>
+    <string name="home_body">Sprint 1 기본 구조가 연결된 상태입니다. 다음 단계에서 실제 데이터와 인증 흐름을 붙입니다.</string>
+</resources>
