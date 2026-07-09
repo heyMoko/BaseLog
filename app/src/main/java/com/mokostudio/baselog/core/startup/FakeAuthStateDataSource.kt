@@ -1,9 +1,10 @@
 package com.mokostudio.baselog.core.startup
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
+import com.mokostudio.baselog.core.session.AuthSessionStore
 import javax.inject.Inject
 
-class FakeAuthStateDataSource @Inject constructor() : AuthStateDataSource {
-    override fun observeAuthenticated(): Flow<Boolean> = flowOf(false)
+class FakeAuthStateDataSource @Inject constructor(
+    private val authSessionStore: AuthSessionStore
+) : AuthStateDataSource {
+    override fun observeAuthenticated() = authSessionStore.observeAuthenticated()
 }

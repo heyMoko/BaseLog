@@ -5,10 +5,12 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.preferencesDataStoreFile
+import com.mokostudio.baselog.core.auth.AuthRepository
+import com.mokostudio.baselog.core.auth.FakeAuthRepository
 import com.mokostudio.baselog.core.startup.AppStartupRepository
-import com.mokostudio.baselog.core.startup.DefaultAppStartupRepository
 import com.mokostudio.baselog.core.startup.FakeAuthStateDataSource
 import com.mokostudio.baselog.core.startup.AuthStateDataSource
+import com.mokostudio.baselog.core.startup.DefaultAppStartupRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -31,6 +33,12 @@ abstract class AppBindModule {
     abstract fun bindAuthStateDataSource(
         impl: FakeAuthStateDataSource
     ): AuthStateDataSource
+
+    @Binds
+    @Singleton
+    abstract fun bindAuthRepository(
+        impl: FakeAuthRepository
+    ): AuthRepository
 }
 
 @Module

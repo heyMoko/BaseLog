@@ -1,11 +1,15 @@
 <resources>
     <string name="app_name">BaseLog</string>
     <string name="splash_title">BASELOG</string>
-    <string name="splash_subtitle">야구장에 가면 가장 먼저 켜는 앱</string>
-    <string name="splash_loading">세션을 확인하는 중...</string>
-    <string name="login_title">직관을 시작할 준비</string>
-    <string name="login_body">Firebase Auth와 DataStore가 붙기 전까지 사용하는 임시 로그인 화면입니다.</string>
-    <string name="login_cta">임시로 홈 진입</string>
+    <string name="splash_subtitle">The app you open first at the ballpark.</string>
+    <string name="splash_loading">Checking your session...</string>
+    <string name="login_title">Ready for game day</string>
+    <string name="login_body">This login screen already has the structure needed for a real auth flow. Firebase Auth providers can be connected next without rewriting the screen layer.</string>
+    <string name="login_dev_title">Development sign-in entry</string>
+    <string name="login_dev_body">This button currently uses a fake auth repository to update session state. It can be replaced later with Google, Apple, anonymous, or other real providers.</string>
+    <string name="login_cta">Continue with dev sign-in</string>
+    <string name="login_loading">Signing you in...</string>
     <string name="home_title">Home</string>
-    <string name="home_body">Sprint 1 기본 구조가 연결된 상태입니다. 다음 단계에서 실제 데이터와 인증 흐름을 붙입니다.</string>
+    <string name="home_body">Sprint 1 app structure is connected. Real data and authentication can be layered in next.</string>
+    <string name="home_status">You reached Home with an active session state.</string>
 </resources>
