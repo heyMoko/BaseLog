@@ -1,8 +1,5 @@
 package com.mokostudio.baselog.core.startup
 
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import com.mokostudio.baselog.core.datastore.UserPreferencesDataSource
-import java.nio.file.Files
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -11,10 +8,10 @@ import org.junit.Test
 
 class DefaultAppStartupRepositoryTest {
     @Test
-    fun returnsHomeWhenAuthenticated() = runBlocking {
+    fun returnsHomeWhenAuthenticatedAndProfileCompleted() = runBlocking {
         val repository = DefaultAppStartupRepository(
-            userPreferencesDataSource = createUserPreferencesDataSource(onboardingCompleted = false),
-            authStateDataSource = FakeAuthStateDataSource(authenticated = true)
+            authStateDataSource = FakeAuthStateDataSource(authenticated = true),
+            userProfileRepository = FakeUserProfileRepository(profileCompleted = true)
         )
 
         val destination = repository.observeStartupDestination().first()
@@ -23,10 +20,10 @@ class DefaultAppStartupRepositoryTest {
     }
 
     @Test
-    fun returnsLoginWhenOnboardingCompletedAndNotAuthenticated() = runBlocking {
+    fun returnsLoginWhenNotAuthenticated() = runBlocking {
         val repository = DefaultAppStartupRepository(
-            userPreferencesDataSource = createUserPreferencesDataSource(onboardingCompleted = true),
-            authStateDataSource = FakeAuthStateDataSource(authenticated = false)
+            authStateDataSource = FakeAuthStateDataSource(authenticated = false),
+            userProfileRepository = FakeUserProfileRepository(profileCompleted = true)
         )
 
         val destination = repository.observeStartupDestination().first()
@@ -35,27 +32,15 @@ class DefaultAppStartupRepositoryTest {
     }
 
     @Test
-    fun returnsLoginWhenOnboardingIncompleteAndNotAuthenticated() = runBlocking {
+    fun returnsOnboardingWhenAuthenticatedAndProfileIncomplete() = runBlocking {
         val repository = DefaultAppStartupRepository(
-            userPreferencesDataSource = createUserPreferencesDataSource(onboardingCompleted = false),
-            authStateDataSource = FakeAuthStateDataSource(authenticated = false)
+            authStateDataSource = FakeAuthStateDataSource(authenticated = true),
+            userProfileRepository = FakeUserProfileRepository(profileCompleted = false)
         )
 
         val destination = repository.observeStartupDestination().first()
 
-        assertEquals(StartupDestination.Login, destination)
-    }
-
-    private suspend fun createUserPreferencesDataSource(
-        onboardingCompleted: Boolean
-    ): UserPreferencesDataSource {
-        val tempDir = Files.createTempDirectory("baselog-startup-test")
-        val dataStore = PreferenceDataStoreFactory.create {
-            tempDir.resolve("prefs.preferences_pb").toFile()
-        }
-        return UserPreferencesDataSource(dataStore).also { dataSource ->
-            dataSource.setOnboardingCompleted(onboardingCompleted)
-        }
+        assertEquals(StartupDestination.Onboarding, destination)
     }
 
     private class FakeAuthStateDataSource(
@@ -64,5 +49,17 @@ class DefaultAppStartupRepositoryTest {
         private val authenticatedState = MutableStateFlow(authenticated)
 
         override fun observeAuthenticated() = authenticatedState
+    }
+
+    private class FakeUserProfileRepository(
+        profileCompleted: Boolean
+    ) : com.mokostudio.baselog.core.user.UserProfileRepository {
+        private val completedState = MutableStateFlow(profileCompleted)
+
+        override fun observeProfileCompleted() = completedState
+
+        override suspend fun saveProfile(
+            profile: com.mokostudio.baselog.core.user.UserProfileDraft
+        ): Result<Unit> = Result.success(Unit)
     }
 }

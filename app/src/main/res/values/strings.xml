@@ -13,4 +13,18 @@
     <string name="home_body">Sprint 1 app structure is connected. Real data and authentication can be layered in next.</string>
     <string name="home_status">You reached Home with an active session state.</string>
     <string name="home_sign_out">Sign out</string>
+    <string name="onboarding_title">Build your BASELOG profile</string>
+    <string name="onboarding_body">Choose the name and club you will carry across your ballpark logs.</string>
+    <string name="onboarding_nickname_label">Nickname</string>
+    <string name="onboarding_nickname_placeholder">Enter your nickname</string>
+    <string name="onboarding_team_label">Favorite team</string>
+    <string name="onboarding_team_placeholder">Select your club</string>
+    <string name="onboarding_bio_label">Bio</string>
+    <string name="onboarding_bio_placeholder">Tell other fans a little about yourself (optional)</string>
+    <string name="onboarding_submit">Complete profile</string>
+    <string name="onboarding_loading">Saving your profile...</string>
+    <string name="onboarding_error_nickname">Nickname must be at least 2 characters.</string>
+    <string name="onboarding_error_team">Choose your favorite team to continue.</string>
+    <string name="onboarding_error_auth">You need to be signed in before creating a profile.</string>
+    <string name="onboarding_error_firestore">Firestore is not configured. Check Firebase setup before onboarding users.</string>
 </resources>

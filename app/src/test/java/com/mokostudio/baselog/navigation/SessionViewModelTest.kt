@@ -1,6 +1,7 @@
 package com.mokostudio.baselog.navigation
 
-import com.mokostudio.baselog.core.auth.AuthRepository
+import com.mokostudio.baselog.core.startup.AppStartupRepository
+import com.mokostudio.baselog.core.startup.StartupDestination
 import com.mokostudio.baselog.testutil.MainDispatcherRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -9,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -20,33 +22,33 @@ class SessionViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     @Test
-    fun isAuthenticated_reflectsRepositoryUpdates() = runTest {
-        val repository = FakeAuthRepository()
-        val viewModel = SessionViewModel(authRepository = repository)
-        val collectionJob: Job = backgroundScope.launch {
+    fun startupDestination_reflectsRepositoryUpdates() = runTest {
+        val repository = FakeStartupRepository()
+        val viewModel = SessionViewModel(appStartupRepository = repository)
+        val startupCollectionJob: Job = backgroundScope.launch {
+            viewModel.startupDestination.collect {}
+        }
+        val authCollectionJob: Job = backgroundScope.launch {
             viewModel.isAuthenticated.collect {}
         }
 
         advanceUntilIdle()
 
+        assertEquals(StartupDestination.Login, viewModel.startupDestination.value)
         assertFalse(viewModel.isAuthenticated.value)
 
-        repository.authenticated.value = true
+        repository.destination.value = StartupDestination.Onboarding
         advanceUntilIdle()
 
+        assertEquals(StartupDestination.Onboarding, viewModel.startupDestination.value)
         assertTrue(viewModel.isAuthenticated.value)
-        collectionJob.cancel()
+        startupCollectionJob.cancel()
+        authCollectionJob.cancel()
     }
 
-    private class FakeAuthRepository : AuthRepository {
-        val authenticated = MutableStateFlow(false)
+    private class FakeStartupRepository : AppStartupRepository {
+        val destination = MutableStateFlow(StartupDestination.Login)
 
-        override fun observeAuthenticated(): Flow<Boolean> = authenticated
-
-        override suspend fun signInWithGoogleIdToken(idToken: String): Result<Unit> {
-            return Result.success(Unit)
-        }
-
-        override suspend fun signOut() = Unit
+        override fun observeStartupDestination(): Flow<StartupDestination> = destination
     }
 }

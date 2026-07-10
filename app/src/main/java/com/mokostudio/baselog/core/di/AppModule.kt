@@ -9,10 +9,13 @@ import com.mokostudio.baselog.core.auth.AuthRepository
 import com.mokostudio.baselog.core.auth.FirebaseAuthRepository
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.mokostudio.baselog.core.startup.AppStartupRepository
 import com.mokostudio.baselog.core.startup.AuthStateDataSource
 import com.mokostudio.baselog.core.startup.DefaultAppStartupRepository
 import com.mokostudio.baselog.core.startup.FirebaseAuthStateDataSource
+import com.mokostudio.baselog.core.user.FirebaseUserProfileRepository
+import com.mokostudio.baselog.core.user.UserProfileRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -41,6 +44,12 @@ abstract class AppBindModule {
     abstract fun bindAuthRepository(
         impl: FirebaseAuthRepository
     ): AuthRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindUserProfileRepository(
+        impl: FirebaseUserProfileRepository
+    ): UserProfileRepository
 }
 
 @Module
@@ -56,6 +65,12 @@ object AppModule {
     @Singleton
     fun provideFirebaseAuth(firebaseApp: FirebaseApp?): FirebaseAuth? {
         return firebaseApp?.let(FirebaseAuth::getInstance)
+    }
+
+    @Provides
+    @Singleton
+    fun provideFirebaseFirestore(firebaseApp: FirebaseApp?): FirebaseFirestore? {
+        return firebaseApp?.let(FirebaseFirestore::getInstance)
     }
 
     @Provides
