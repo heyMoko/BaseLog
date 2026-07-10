@@ -6,9 +6,10 @@ data class OnboardingUiState(
     val nickname: String = "",
     val selectedTeam: BaseballTeam? = null,
     val bio: String = "",
+    val isLoadingProfile: Boolean = true,
     val isSaving: Boolean = false,
     val errorMessage: String? = null
 ) {
     val isSubmitEnabled: Boolean
-        get() = !isSaving && nickname.trim().length >= 2 && selectedTeam != null
+        get() = !isLoadingProfile && !isSaving && nickname.trim().length >= 2 && selectedTeam != null
 }

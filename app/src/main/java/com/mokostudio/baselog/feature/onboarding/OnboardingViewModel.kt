@@ -20,6 +20,25 @@ class OnboardingViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(OnboardingUiState())
     val uiState: StateFlow<OnboardingUiState> = _uiState.asStateFlow()
 
+    init {
+        viewModelScope.launch {
+            userProfileRepository.observeCurrentUserProfile().collect { profile ->
+                _uiState.update { state ->
+                    if (state.isSaving) {
+                        state
+                    } else {
+                        state.copy(
+                            nickname = profile?.nickname ?: state.nickname,
+                            selectedTeam = profile?.favoriteTeam ?: state.selectedTeam,
+                            bio = profile?.bio ?: state.bio,
+                            isLoadingProfile = false
+                        )
+                    }
+                }
+            }
+        }
+    }
+
     fun onNicknameChanged(nickname: String) {
         _uiState.update {
             it.copy(
@@ -88,6 +107,10 @@ class OnboardingViewModel @Inject constructor(
                         isSaving = false,
                         errorMessage = throwable.message ?: ONBOARDING_ERROR_UNKNOWN
                     )
+                }
+            }.onSuccess {
+                _uiState.update {
+                    it.copy(isSaving = false)
                 }
             }
         }

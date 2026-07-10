@@ -58,6 +58,9 @@ class DefaultAppStartupRepositoryTest {
 
         override fun observeProfileCompleted() = completedState
 
+        override fun observeCurrentUserProfile() =
+            MutableStateFlow<com.mokostudio.baselog.core.user.UserProfile?>(null)
+
         override suspend fun saveProfile(
             profile: com.mokostudio.baselog.core.user.UserProfileDraft
         ): Result<Unit> = Result.success(Unit)

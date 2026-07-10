@@ -85,6 +85,11 @@ internal fun OnboardingScreen(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
+        if (uiState.isLoadingProfile) {
+            CircularProgressIndicator()
+            return@Column
+        }
+
         OutlinedTextField(
             value = uiState.nickname,
             onValueChange = onNicknameChanged,
@@ -190,7 +195,8 @@ private fun OnboardingScreenPreview() {
             uiState = OnboardingUiState(
                 nickname = "Moko",
                 selectedTeam = BaseballTeam.LgTwins,
-                bio = "Weekend ballpark visitor."
+                bio = "Weekend ballpark visitor.",
+                isLoadingProfile = false
             ),
             onNicknameChanged = {},
             onTeamSelected = {},
@@ -207,6 +213,7 @@ private fun OnboardingScreenErrorPreview() {
         OnboardingScreen(
             innerPadding = PaddingValues(),
             uiState = OnboardingUiState(
+                isLoadingProfile = false,
                 errorMessage = "Choose your favorite team to continue."
             ),
             onNicknameChanged = {},

@@ -15,7 +15,6 @@ import com.mokostudio.baselog.core.startup.StartupDestination
 import com.mokostudio.baselog.feature.auth.login.LoginRoute
 import com.mokostudio.baselog.feature.home.HomeRoute
 import com.mokostudio.baselog.feature.onboarding.OnboardingRoute
-import com.mokostudio.baselog.feature.home.HomeViewModel
 import com.mokostudio.baselog.feature.splash.SplashRoute
 
 @Composable
@@ -80,8 +79,7 @@ fun BaseLogNavHost(
         }
 
         composable(BaseLogDestination.Home.route) {
-            val homeViewModel: HomeViewModel = hiltViewModel()
-            HomeRoute(onSignOutClick = homeViewModel::signOut)
+            HomeRoute()
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.mokostudio.baselog.feature.onboarding
 
 import com.mokostudio.baselog.core.user.BaseballTeam
+import com.mokostudio.baselog.core.user.UserProfile
 import com.mokostudio.baselog.core.user.UserProfileDraft
 import com.mokostudio.baselog.core.user.UserProfileRepository
 import com.mokostudio.baselog.testutil.MainDispatcherRule
@@ -88,6 +89,7 @@ class OnboardingViewModelTest {
     @Test
     fun submitEnabled_dependsOnRequiredFields() {
         val viewModel = OnboardingViewModel(userProfileRepository = FakeUserProfileRepository())
+        mainDispatcherRule.testDispatcher.scheduler.advanceUntilIdle()
 
         assertFalse(viewModel.uiState.value.isSubmitEnabled)
 
@@ -97,12 +99,35 @@ class OnboardingViewModelTest {
         assertTrue(viewModel.uiState.value.isSubmitEnabled)
     }
 
+    @Test
+    fun init_prefillsExistingProfile() = runTest {
+        val repository = FakeUserProfileRepository()
+        repository.profile.value = UserProfile(
+            nickname = "Moko",
+            favoriteTeam = BaseballTeam.LgTwins,
+            bio = "Ballpark regular.",
+            email = "moko@example.com",
+            photoUrl = ""
+        )
+
+        val viewModel = OnboardingViewModel(userProfileRepository = repository)
+        advanceUntilIdle()
+
+        assertEquals("Moko", viewModel.uiState.value.nickname)
+        assertEquals(BaseballTeam.LgTwins, viewModel.uiState.value.selectedTeam)
+        assertEquals("Ballpark regular.", viewModel.uiState.value.bio)
+        assertFalse(viewModel.uiState.value.isLoadingProfile)
+    }
+
     private class FakeUserProfileRepository(
         private val saveResult: Result<Unit> = Result.success(Unit)
     ) : UserProfileRepository {
         var savedProfile: UserProfileDraft? = null
+        val profile = MutableStateFlow<UserProfile?>(null)
 
         override fun observeProfileCompleted(): Flow<Boolean> = MutableStateFlow(false)
+
+        override fun observeCurrentUserProfile(): Flow<UserProfile?> = profile
 
         override suspend fun saveProfile(profile: UserProfileDraft): Result<Unit> {
             savedProfile = profile

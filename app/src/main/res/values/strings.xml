@@ -13,6 +13,8 @@
     <string name="home_body">Sprint 1 app structure is connected. Real data and authentication can be layered in next.</string>
     <string name="home_status">You reached Home with an active session state.</string>
     <string name="home_sign_out">Sign out</string>
+    <string name="home_welcome">Welcome, %1$s</string>
+    <string name="home_team">Your club: %1$s</string>
     <string name="onboarding_title">Build your BASELOG profile</string>
     <string name="onboarding_body">Choose the name and club you will carry across your ballpark logs.</string>
     <string name="onboarding_nickname_label">Nickname</string>

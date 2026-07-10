@@ -39,6 +39,23 @@ class FirebaseUserProfileRepository @Inject constructor(
             .distinctUntilChanged()
     }
 
+    override fun observeCurrentUserProfile(): Flow<UserProfile?> {
+        val auth = firebaseAuth ?: return flowOf(null)
+        val db = firestore ?: return flowOf(null)
+
+        return auth.observeCurrentUserId()
+            .flatMapLatest { userId ->
+                if (userId == null) {
+                    flowOf(null)
+                } else {
+                    db.collection(USERS_COLLECTION)
+                        .document(userId)
+                        .observeProfile()
+                }
+            }
+            .distinctUntilChanged()
+    }
+
     override suspend fun saveProfile(profile: UserProfileDraft): Result<Unit> {
         val auth = firebaseAuth ?: return Result.failure(
             IllegalStateException("You need to be signed in before creating a profile.")
@@ -83,6 +100,16 @@ private fun FirebaseAuth.observeCurrentUserId(): Flow<String?> = callbackFlow {
     }
 }
 
+private fun DocumentReference.observeProfile(): Flow<UserProfile?> = callbackFlow {
+    val registration = addSnapshotListener { snapshot, _ ->
+        trySend(snapshot.toUserProfile())
+    }
+
+    awaitClose {
+        registration.remove()
+    }
+}
+
 private fun DocumentReference.observeCompletionState(): Flow<Boolean> = callbackFlow {
     val registration = addSnapshotListener { snapshot, _ ->
         trySend(snapshot.isProfileCompleted())
@@ -100,6 +127,23 @@ private fun DocumentSnapshot?.isProfileCompleted(): Boolean {
     val nickname = snapshot.getString("nickname").orEmpty().trim()
     val favoriteTeamId = snapshot.getString("favoriteTeamId").orEmpty().trim()
     return nickname.isNotBlank() && favoriteTeamId.isNotBlank()
+}
+
+private fun DocumentSnapshot?.toUserProfile(): UserProfile? {
+    val snapshot = this ?: return null
+    if (!snapshot.exists()) return null
+
+    val nickname = snapshot.getString("nickname").orEmpty().trim()
+    val favoriteTeamId = snapshot.getString("favoriteTeamId").orEmpty().trim()
+    val favoriteTeam = BaseballTeam.fromId(favoriteTeamId) ?: return null
+
+    return UserProfile(
+        nickname = nickname,
+        favoriteTeam = favoriteTeam,
+        bio = snapshot.getString("bio").orEmpty().trim(),
+        email = snapshot.getString("email").orEmpty().trim(),
+        photoUrl = snapshot.getString("photoUrl").orEmpty().trim()
+    )
 }
 
 private suspend fun DocumentReference.awaitGet(): DocumentSnapshot =
