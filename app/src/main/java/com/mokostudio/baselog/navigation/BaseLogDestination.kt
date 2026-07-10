@@ -15,6 +15,10 @@ sealed interface BaseLogDestination {
         override val route = "onboarding"
     }
 
+    data object EditProfile : BaseLogDestination {
+        override val route = "profile/edit"
+    }
+
     data object Home : BaseLogDestination {
         override val route = "home"
     }

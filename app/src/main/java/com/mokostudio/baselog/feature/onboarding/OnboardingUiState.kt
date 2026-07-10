@@ -2,7 +2,13 @@ package com.mokostudio.baselog.feature.onboarding
 
 import com.mokostudio.baselog.core.user.BaseballTeam
 
+enum class OnboardingMode {
+    Create,
+    Edit
+}
+
 data class OnboardingUiState(
+    val mode: OnboardingMode = OnboardingMode.Create,
     val nickname: String = "",
     val selectedTeam: BaseballTeam? = null,
     val bio: String = "",

@@ -29,4 +29,9 @@
     <string name="onboarding_error_team">Choose your favorite team to continue.</string>
     <string name="onboarding_error_auth">You need to be signed in before creating a profile.</string>
     <string name="onboarding_error_firestore">Firestore is not configured. Check Firebase setup before onboarding users.</string>
+    <string name="profile_edit_title">Edit profile</string>
+    <string name="profile_edit_body">Update the BASELOG profile other fans will see.</string>
+    <string name="profile_edit_submit">Save changes</string>
+    <string name="profile_edit_action">Edit profile</string>
+    <string name="profile_edit_back">Back</string>
 </resources>

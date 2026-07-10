@@ -11,6 +11,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedButton
@@ -18,8 +19,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -35,14 +39,25 @@ import com.mokostudio.baselog.ui.theme.BaseLogTheme
 
 @Composable
 fun OnboardingRoute(
+    mode: OnboardingMode = OnboardingMode.Create,
+    onBackClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     viewModel: OnboardingViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    LaunchedEffect(mode) {
+        viewModel.setMode(mode)
+    }
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = MaterialTheme.colorScheme.background,
+        topBar = {
+            if (mode == OnboardingMode.Edit && onBackClick != null) {
+                EditProfileTopAppBar(onBackClick = onBackClick)
+            }
+        }
     ) { innerPadding ->
         OnboardingScreen(
             innerPadding = innerPadding,
@@ -53,6 +68,23 @@ fun OnboardingRoute(
             onSubmitClick = viewModel::saveProfile
         )
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun EditProfileTopAppBar(
+    onBackClick: () -> Unit
+) {
+    TopAppBar(
+        title = {
+            Text(text = stringResource(id = R.string.profile_edit_title))
+        },
+        navigationIcon = {
+            IconButton(onClick = onBackClick) {
+                Text(text = stringResource(id = R.string.profile_edit_back))
+            }
+        }
+    )
 }
 
 @Composable
@@ -75,12 +107,20 @@ internal fun OnboardingScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = stringResource(id = R.string.onboarding_title),
+            text = if (uiState.mode == OnboardingMode.Edit) {
+                stringResource(id = R.string.profile_edit_title)
+            } else {
+                stringResource(id = R.string.onboarding_title)
+            },
             style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.onBackground
         )
         Text(
-            text = stringResource(id = R.string.onboarding_body),
+            text = if (uiState.mode == OnboardingMode.Edit) {
+                stringResource(id = R.string.profile_edit_body)
+            } else {
+                stringResource(id = R.string.onboarding_body)
+            },
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -180,7 +220,13 @@ internal fun OnboardingScreen(
                     strokeWidth = 2.dp
                 )
             } else {
-                Text(text = stringResource(id = R.string.onboarding_submit))
+                Text(
+                    text = if (uiState.mode == OnboardingMode.Edit) {
+                        stringResource(id = R.string.profile_edit_submit)
+                    } else {
+                        stringResource(id = R.string.onboarding_submit)
+                    }
+                )
             }
         }
     }
@@ -193,6 +239,7 @@ private fun OnboardingScreenPreview() {
         OnboardingScreen(
             innerPadding = PaddingValues(),
             uiState = OnboardingUiState(
+                mode = OnboardingMode.Create,
                 nickname = "Moko",
                 selectedTeam = BaseballTeam.LgTwins,
                 bio = "Weekend ballpark visitor.",
@@ -213,6 +260,7 @@ private fun OnboardingScreenErrorPreview() {
         OnboardingScreen(
             innerPadding = PaddingValues(),
             uiState = OnboardingUiState(
+                mode = OnboardingMode.Edit,
                 isLoadingProfile = false,
                 errorMessage = "Choose your favorite team to continue."
             ),

@@ -1,9 +1,11 @@
 *.iml
 .gradle
+.gradle-user-home/
 /local.properties
 /.idea/
 /.kotlin/
 /.agents/
+.tools/
 .DS_Store
 /build
 /captures

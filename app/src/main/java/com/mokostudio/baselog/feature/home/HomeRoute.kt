@@ -22,6 +22,7 @@ import com.mokostudio.baselog.ui.theme.BaseLogTheme
 
 @Composable
 fun HomeRoute(
+    onEditProfileClick: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
@@ -34,6 +35,7 @@ fun HomeRoute(
         HomeScreen(
             modifier = Modifier.padding(innerPadding),
             uiState = uiState,
+            onEditProfileClick = onEditProfileClick,
             onSignOutClick = viewModel::signOut
         )
     }
@@ -42,6 +44,7 @@ fun HomeRoute(
 @Composable
 internal fun HomeScreen(
     uiState: HomeUiState,
+    onEditProfileClick: () -> Unit,
     onSignOutClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -79,6 +82,9 @@ internal fun HomeScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
+                    Button(onClick = onEditProfileClick) {
+                        Text(text = stringResource(id = R.string.profile_edit_action))
+                    }
                 }
             }
         } else {
@@ -110,6 +116,7 @@ private fun HomeScreenPreview() {
                 bio = "Always tracking weekday games.",
                 hasProfile = true
             ),
+            onEditProfileClick = {},
             onSignOutClick = {}
         )
     }

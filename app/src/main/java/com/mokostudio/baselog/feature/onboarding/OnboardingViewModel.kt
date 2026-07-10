@@ -39,6 +39,12 @@ class OnboardingViewModel @Inject constructor(
         }
     }
 
+    fun setMode(mode: OnboardingMode) {
+        _uiState.update { state ->
+            if (state.mode == mode) state else state.copy(mode = mode)
+        }
+    }
+
     fun onNicknameChanged(nickname: String) {
         _uiState.update {
             it.copy(

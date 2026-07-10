@@ -119,6 +119,15 @@ class OnboardingViewModelTest {
         assertFalse(viewModel.uiState.value.isLoadingProfile)
     }
 
+    @Test
+    fun setMode_updatesUiStateMode() {
+        val viewModel = OnboardingViewModel(userProfileRepository = FakeUserProfileRepository())
+
+        viewModel.setMode(OnboardingMode.Edit)
+
+        assertEquals(OnboardingMode.Edit, viewModel.uiState.value.mode)
+    }
+
     private class FakeUserProfileRepository(
         private val saveResult: Result<Unit> = Result.success(Unit)
     ) : UserProfileRepository {

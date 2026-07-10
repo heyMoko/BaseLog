@@ -14,6 +14,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mokostudio.baselog.core.startup.StartupDestination
 import com.mokostudio.baselog.feature.auth.login.LoginRoute
 import com.mokostudio.baselog.feature.home.HomeRoute
+import com.mokostudio.baselog.feature.onboarding.OnboardingMode
 import com.mokostudio.baselog.feature.onboarding.OnboardingRoute
 import com.mokostudio.baselog.feature.splash.SplashRoute
 
@@ -75,11 +76,22 @@ fun BaseLogNavHost(
         }
 
         composable(BaseLogDestination.Onboarding.route) {
-            OnboardingRoute()
+            OnboardingRoute(mode = OnboardingMode.Create)
+        }
+
+        composable(BaseLogDestination.EditProfile.route) {
+            OnboardingRoute(
+                mode = OnboardingMode.Edit,
+                onBackClick = navController::popBackStack
+            )
         }
 
         composable(BaseLogDestination.Home.route) {
-            HomeRoute()
+            HomeRoute(
+                onEditProfileClick = {
+                    navController.navigate(BaseLogDestination.EditProfile.route)
+                }
+            )
         }
     }
 }
