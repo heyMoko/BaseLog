@@ -16,9 +16,9 @@ class GoogleIdTokenProvider @Inject constructor() {
         context: Context,
         serverClientId: String
     ): Result<String> {
-        if (serverClientId.isBlank() || serverClientId == GOOGLE_WEB_CLIENT_ID_PLACEHOLDER) {
+        if (serverClientId.isBlank()) {
             return Result.failure(
-                IllegalStateException("Google sign-in is not configured. Set auth_google_web_client_id and add google-services.json.")
+                IllegalStateException("Google sign-in is not configured. Check google-services.json and Firebase setup.")
             )
         }
 
@@ -83,5 +83,3 @@ class GoogleIdTokenProvider @Inject constructor() {
         throw IllegalStateException("Google sign-in returned an unsupported credential.")
     }
 }
-
-private const val GOOGLE_WEB_CLIENT_ID_PLACEHOLDER = "TODO_SET_FIREBASE_WEB_CLIENT_ID"
