@@ -23,6 +23,7 @@ data class WinRateSummary(
     val losses: Int = 0,
     val draws: Int = 0,
     val winRate: Double? = null,
+    val winRatePercent: Int? = null,
     val message: String? = null
 ) {
     val hasGames: Boolean
@@ -31,3 +32,9 @@ data class WinRateSummary(
     val decidedGames: Int
         get() = wins + losses
 }
+
+data class BaseballLogDraft(
+    val attendedDate: LocalDate,
+    val team: BaseballTeam,
+    val result: BaseballGameResult
+)

@@ -1,5 +1,7 @@
 package com.mokostudio.baselog.feature.log
 
+import kotlin.math.floor
+
 object WinRateCalculator {
     fun calculate(
         logs: List<BaseballLogEntry>,
@@ -22,10 +24,13 @@ object WinRateCalculator {
             losses = losses,
             draws = draws,
             winRate = winRate,
+            winRatePercent = winRate?.toWholePercentage(),
             message = winRate.toWinRateMessage()
         )
     }
 }
+
+private fun Double.toWholePercentage(): Int = floor(this * 100.0).toInt()
 
 private fun Double?.toWinRateMessage(): String? {
     val value = this ?: return null

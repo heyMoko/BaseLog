@@ -35,6 +35,7 @@ class WinRateCalculatorTest {
         assertEquals(1, summary.losses)
         assertEquals(1, summary.draws)
         assertEquals(0.5, summary.winRate ?: 0.0, 0.0001)
+        assertEquals(50, summary.winRatePercent)
         assertEquals("Your game-day instincts are solid.", summary.message)
     }
 
@@ -55,6 +56,7 @@ class WinRateCalculatorTest {
         assertEquals(1, summary.losses)
         assertEquals(0, summary.draws)
         assertEquals(0.5, summary.winRate ?: 0.0, 0.0001)
+        assertEquals(50, summary.winRatePercent)
     }
 
     @Test
@@ -70,6 +72,7 @@ class WinRateCalculatorTest {
         assertEquals(2, summary.totalGames)
         assertEquals(0, summary.decidedGames)
         assertNull(summary.winRate)
+        assertNull(summary.winRatePercent)
         assertNull(summary.message)
     }
 
@@ -98,8 +101,24 @@ class WinRateCalculatorTest {
         )
 
         assertEquals("You're a good luck charm!", perfect.message)
+        assertEquals(100, perfect.winRatePercent)
         assertEquals("Odds feel pretty good today.", strong.message)
+        assertEquals(75, strong.winRatePercent)
         assertEquals("Baseball can still flip at the last moment.", low.message)
+        assertEquals(25, low.winRatePercent)
+    }
+
+    @Test
+    fun calculate_truncatesRecurringDecimalWinRateForDisplay() {
+        val summary = WinRateCalculator.calculate(
+            logs = listOf(
+                logEntry("1", "2026-07-01", BaseballGameResult.Win),
+                logEntry("2", "2026-07-02", BaseballGameResult.Win),
+                logEntry("3", "2026-07-03", BaseballGameResult.Loss)
+            )
+        )
+
+        assertEquals(66, summary.winRatePercent)
     }
 
     private fun logEntry(
