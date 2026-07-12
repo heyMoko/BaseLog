@@ -33,11 +33,12 @@ fun BaseLogNavHost(
             return@LaunchedEffect
         }
 
-        val targetRoute = when (startupDestination) {
-            StartupDestination.Login -> BaseLogDestination.Login.route
-            StartupDestination.Onboarding -> BaseLogDestination.Onboarding.route
-            StartupDestination.Home -> BaseLogDestination.Home.route
+        val allowedRoutes = startupDestination.allowedRoutes()
+        if (currentRoute in allowedRoutes) {
+            return@LaunchedEffect
         }
+
+        val targetRoute = startupDestination.primaryRoute()
 
         if (currentRoute != targetRoute) {
             navController.navigate(targetRoute) {
@@ -82,7 +83,15 @@ fun BaseLogNavHost(
         composable(BaseLogDestination.EditProfile.route) {
             OnboardingRoute(
                 mode = OnboardingMode.Edit,
-                onBackClick = navController::popBackStack
+                onBackClick = navController::popBackStack,
+                onProfileSaved = {
+                    navController.navigate(BaseLogDestination.Home.route) {
+                        popUpTo(BaseLogDestination.Home.route) {
+                            inclusive = false
+                        }
+                        launchSingleTop = true
+                    }
+                }
             )
         }
 
@@ -94,4 +103,19 @@ fun BaseLogNavHost(
             )
         }
     }
+}
+
+internal fun StartupDestination.primaryRoute(): String = when (this) {
+    StartupDestination.Login -> BaseLogDestination.Login.route
+    StartupDestination.Onboarding -> BaseLogDestination.Onboarding.route
+    StartupDestination.Home -> BaseLogDestination.Home.route
+}
+
+internal fun StartupDestination.allowedRoutes(): Set<String> = when (this) {
+    StartupDestination.Login -> setOf(BaseLogDestination.Login.route)
+    StartupDestination.Onboarding -> setOf(BaseLogDestination.Onboarding.route)
+    StartupDestination.Home -> setOf(
+        BaseLogDestination.Home.route,
+        BaseLogDestination.EditProfile.route
+    )
 }

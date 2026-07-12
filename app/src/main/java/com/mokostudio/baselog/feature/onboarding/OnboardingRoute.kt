@@ -41,6 +41,7 @@ import com.mokostudio.baselog.ui.theme.BaseLogTheme
 fun OnboardingRoute(
     mode: OnboardingMode = OnboardingMode.Create,
     onBackClick: (() -> Unit)? = null,
+    onProfileSaved: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     viewModel: OnboardingViewModel = hiltViewModel()
 ) {
@@ -48,6 +49,17 @@ fun OnboardingRoute(
 
     LaunchedEffect(mode) {
         viewModel.setMode(mode)
+    }
+
+    LaunchedEffect(viewModel, mode) {
+        viewModel.events.collect { event ->
+            if (event is OnboardingEvent.ProfileSaved &&
+                event.mode == OnboardingMode.Edit &&
+                onProfileSaved != null
+            ) {
+                onProfileSaved()
+            }
+        }
     }
 
     Scaffold(

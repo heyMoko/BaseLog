@@ -8,8 +8,11 @@ import com.mokostudio.baselog.core.user.UserProfileRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -19,6 +22,9 @@ class OnboardingViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(OnboardingUiState())
     val uiState: StateFlow<OnboardingUiState> = _uiState.asStateFlow()
+
+    private val _events = MutableSharedFlow<OnboardingEvent>()
+    val events: SharedFlow<OnboardingEvent> = _events.asSharedFlow()
 
     init {
         viewModelScope.launch {
@@ -118,9 +124,14 @@ class OnboardingViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(isSaving = false)
                 }
+                _events.emit(OnboardingEvent.ProfileSaved(mode = state.mode))
             }
         }
     }
+}
+
+sealed interface OnboardingEvent {
+    data class ProfileSaved(val mode: OnboardingMode) : OnboardingEvent
 }
 
 private const val ONBOARDING_ERROR_NICKNAME = "Nickname must be at least 2 characters."

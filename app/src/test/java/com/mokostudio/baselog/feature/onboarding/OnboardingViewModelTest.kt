@@ -6,8 +6,10 @@ import com.mokostudio.baselog.core.user.UserProfileDraft
 import com.mokostudio.baselog.core.user.UserProfileRepository
 import com.mokostudio.baselog.testutil.MainDispatcherRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -126,6 +128,25 @@ class OnboardingViewModelTest {
         viewModel.setMode(OnboardingMode.Edit)
 
         assertEquals(OnboardingMode.Edit, viewModel.uiState.value.mode)
+    }
+
+    @Test
+    fun saveProfile_emitsProfileSavedEventWithEditMode() = runTest {
+        val repository = FakeUserProfileRepository()
+        val viewModel = OnboardingViewModel(userProfileRepository = repository)
+        viewModel.setMode(OnboardingMode.Edit)
+
+        val eventDeferred = async { viewModel.events.first() }
+
+        viewModel.onNicknameChanged("Moko")
+        viewModel.onTeamSelected(BaseballTeam.LgTwins)
+        viewModel.saveProfile()
+        advanceUntilIdle()
+
+        assertEquals(
+            OnboardingEvent.ProfileSaved(mode = OnboardingMode.Edit),
+            eventDeferred.await()
+        )
     }
 
     private class FakeUserProfileRepository(
