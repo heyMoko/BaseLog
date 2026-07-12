@@ -69,18 +69,19 @@ class FirebaseUserProfileRepository @Inject constructor(
 
         val document = db.collection(USERS_COLLECTION).document(user.uid)
         val existingSnapshot = document.awaitGet()
+        val preservedPhotoUrl = existingSnapshot.getString(FIELD_PHOTO_URL).orEmpty().trim()
         val profileData = hashMapOf<String, Any>(
-            "nickname" to profile.nickname.trim(),
-            "favoriteTeamId" to profile.favoriteTeam.id,
-            "favoriteTeamName" to profile.favoriteTeam.displayName,
-            "bio" to profile.bio.trim(),
-            "email" to user.email.orEmpty(),
-            "photoUrl" to user.photoUrl?.toString().orEmpty(),
-            "updatedAt" to FieldValue.serverTimestamp()
+            FIELD_NICKNAME to profile.nickname.trim(),
+            FIELD_FAVORITE_TEAM_ID to profile.favoriteTeam.id,
+            FIELD_FAVORITE_TEAM_NAME to profile.favoriteTeam.displayName,
+            FIELD_BIO to profile.bio.trim(),
+            FIELD_EMAIL to user.email.orEmpty(),
+            FIELD_PHOTO_URL to user.photoUrl?.toString().orEmpty().ifBlank { preservedPhotoUrl },
+            FIELD_UPDATED_AT to FieldValue.serverTimestamp()
         )
 
         if (!existingSnapshot.exists()) {
-            profileData["createdAt"] = FieldValue.serverTimestamp()
+            profileData[FIELD_CREATED_AT] = FieldValue.serverTimestamp()
         }
 
         return document.awaitSet(profileData, SetOptions.merge())
@@ -124,26 +125,37 @@ private fun DocumentSnapshot?.isProfileCompleted(): Boolean {
     val snapshot = this ?: return false
     if (!snapshot.exists()) return false
 
-    val nickname = snapshot.getString("nickname").orEmpty().trim()
-    val favoriteTeamId = snapshot.getString("favoriteTeamId").orEmpty().trim()
-    return nickname.isNotBlank() && favoriteTeamId.isNotBlank()
+    val nickname = snapshot.getString(FIELD_NICKNAME).orEmpty().trim()
+    val favoriteTeam = snapshot.resolveFavoriteTeam()
+    return nickname.length >= MIN_NICKNAME_LENGTH && favoriteTeam != null
 }
 
 private fun DocumentSnapshot?.toUserProfile(): UserProfile? {
     val snapshot = this ?: return null
     if (!snapshot.exists()) return null
 
-    val nickname = snapshot.getString("nickname").orEmpty().trim()
-    val favoriteTeamId = snapshot.getString("favoriteTeamId").orEmpty().trim()
-    val favoriteTeam = BaseballTeam.fromId(favoriteTeamId) ?: return null
+    val nickname = snapshot.getString(FIELD_NICKNAME).orEmpty().trim()
+    if (nickname.length < MIN_NICKNAME_LENGTH) return null
+
+    val favoriteTeam = snapshot.resolveFavoriteTeam() ?: return null
 
     return UserProfile(
         nickname = nickname,
         favoriteTeam = favoriteTeam,
-        bio = snapshot.getString("bio").orEmpty().trim(),
-        email = snapshot.getString("email").orEmpty().trim(),
-        photoUrl = snapshot.getString("photoUrl").orEmpty().trim()
+        bio = snapshot.getString(FIELD_BIO).orEmpty().trim(),
+        email = snapshot.getString(FIELD_EMAIL).orEmpty().trim(),
+        photoUrl = snapshot.getString(FIELD_PHOTO_URL).orEmpty().trim()
     )
+}
+
+private fun DocumentSnapshot.resolveFavoriteTeam(): BaseballTeam? {
+    val favoriteTeamId = getString(FIELD_FAVORITE_TEAM_ID).orEmpty().trim()
+    if (favoriteTeamId.isNotBlank()) {
+        BaseballTeam.fromId(favoriteTeamId)?.let { return it }
+    }
+
+    val favoriteTeamName = getString(FIELD_FAVORITE_TEAM_NAME).orEmpty().trim()
+    return BaseballTeam.fromDisplayName(favoriteTeamName)
 }
 
 private suspend fun DocumentReference.awaitGet(): DocumentSnapshot =
@@ -179,3 +191,12 @@ private suspend fun DocumentReference.awaitSet(
 }
 
 private const val USERS_COLLECTION = "users"
+private const val FIELD_NICKNAME = "nickname"
+private const val FIELD_FAVORITE_TEAM_ID = "favoriteTeamId"
+private const val FIELD_FAVORITE_TEAM_NAME = "favoriteTeamName"
+private const val FIELD_BIO = "bio"
+private const val FIELD_EMAIL = "email"
+private const val FIELD_PHOTO_URL = "photoUrl"
+private const val FIELD_CREATED_AT = "createdAt"
+private const val FIELD_UPDATED_AT = "updatedAt"
+private const val MIN_NICKNAME_LENGTH = 2

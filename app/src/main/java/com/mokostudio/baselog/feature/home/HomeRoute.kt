@@ -1,16 +1,21 @@
 package com.mokostudio.baselog.feature.home
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -48,59 +53,111 @@ internal fun HomeScreen(
     onSignOutClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 24.dp, vertical = 32.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+            .padding(horizontal = 24.dp, vertical = 32.dp)
     ) {
-        Text(
-            text = stringResource(id = R.string.home_title),
-            style = MaterialTheme.typography.headlineLarge,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-        if (uiState.hasProfile) {
-            Card {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.home_welcome, uiState.nickname),
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = stringResource(id = R.string.home_team, uiState.favoriteTeamName),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    if (uiState.bio.isNotBlank()) {
+        if (uiState.isLoading) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            return@Box
+        }
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = stringResource(id = R.string.home_title),
+                style = MaterialTheme.typography.headlineLarge,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+
+            val profile = uiState.profile
+            if (profile != null) {
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         Text(
-                            text = uiState.bio,
+                            text = stringResource(id = R.string.home_welcome, profile.nickname),
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = stringResource(id = R.string.home_team, profile.favoriteTeamName),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        if (profile.bio.isNotBlank()) {
+                            Text(
+                                text = profile.bio,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        } else {
+                            Text(
+                                text = stringResource(id = R.string.home_bio_empty),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        if (profile.email.isNotBlank()) {
+                            Text(
+                                text = profile.email,
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.home_next_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = stringResource(id = R.string.home_next_body),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        OutlinedButton(onClick = onEditProfileClick) {
+                            Text(text = stringResource(id = R.string.profile_edit_action))
+                        }
                     }
-                    Button(onClick = onEditProfileClick) {
-                        Text(text = stringResource(id = R.string.profile_edit_action))
+                }
+            } else if (uiState.isProfileUnavailable) {
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.home_profile_unavailable_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = stringResource(id = R.string.home_profile_unavailable_body),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        OutlinedButton(onClick = onEditProfileClick) {
+                            Text(text = stringResource(id = R.string.profile_edit_action))
+                        }
                     }
                 }
             }
-        } else {
-            Text(
-                text = stringResource(id = R.string.home_body),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = stringResource(id = R.string.home_status),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-        Button(onClick = onSignOutClick) {
-            Text(text = stringResource(id = R.string.home_sign_out))
+
+            Button(onClick = onSignOutClick) {
+                Text(text = stringResource(id = R.string.home_sign_out))
+            }
         }
     }
 }
@@ -111,10 +168,26 @@ private fun HomeScreenPreview() {
     BaseLogTheme {
         HomeScreen(
             uiState = HomeUiState(
-                nickname = "Moko",
-                favoriteTeamName = "LG Twins",
-                bio = "Always tracking weekday games.",
-                hasProfile = true
+                profile = HomeProfileSummary(
+                    nickname = "Moko",
+                    favoriteTeamName = "LG Twins",
+                    bio = "Always tracking weekday games.",
+                    email = "moko@example.com"
+                )
+            ),
+            onEditProfileClick = {},
+            onSignOutClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun HomeScreenUnavailablePreview() {
+    BaseLogTheme {
+        HomeScreen(
+            uiState = HomeUiState(
+                isProfileUnavailable = true
             ),
             onEditProfileClick = {},
             onSignOutClick = {}

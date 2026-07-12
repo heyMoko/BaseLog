@@ -57,9 +57,27 @@ class HomeViewModelTest {
         )
         advanceUntilIdle()
 
-        assertEquals("Moko", viewModel.uiState.value.nickname)
-        assertEquals("LG Twins", viewModel.uiState.value.favoriteTeamName)
-        assertTrue(viewModel.uiState.value.hasProfile)
+        assertEquals("Moko", viewModel.uiState.value.profile?.nickname)
+        assertEquals("LG Twins", viewModel.uiState.value.profile?.favoriteTeamName)
+        assertTrue(viewModel.uiState.value.profile != null)
+        assertTrue(!viewModel.uiState.value.isProfileUnavailable)
+        collectionJob.cancel()
+    }
+
+    @Test
+    fun uiState_marksProfileUnavailableWhenRepositoryReturnsNull() = runTest {
+        val viewModel = HomeViewModel(
+            authRepository = FakeAuthRepository(),
+            userProfileRepository = FakeUserProfileRepository()
+        )
+        val collectionJob: Job = backgroundScope.launch {
+            viewModel.uiState.collect {}
+        }
+
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.isProfileUnavailable)
+        assertTrue(viewModel.uiState.value.profile == null)
         collectionJob.cancel()
     }
 

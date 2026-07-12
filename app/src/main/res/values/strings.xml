@@ -10,11 +10,14 @@
     <string name="login_cta">Continue with Google</string>
     <string name="login_loading">Signing you in with Google...</string>
     <string name="home_title">Home</string>
-    <string name="home_body">Sprint 1 app structure is connected. Real data and authentication can be layered in next.</string>
-    <string name="home_status">You reached Home with an active session state.</string>
     <string name="home_sign_out">Sign out</string>
     <string name="home_welcome">Welcome, %1$s</string>
     <string name="home_team">Your club: %1$s</string>
+    <string name="home_bio_empty">Add a short intro so other fans know what kind of ballpark visitor you are.</string>
+    <string name="home_next_title">Profile ready for game day</string>
+    <string name="home_next_body">Your account is ready. Next we can connect baseball log creation, win-rate history, and friend comparisons on top of this profile.</string>
+    <string name="home_profile_unavailable_title">We couldn\'t load your profile</string>
+    <string name="home_profile_unavailable_body">Your session is active, but the saved profile is missing or incomplete. Open profile edit to finish recovery before continuing.</string>
     <string name="onboarding_title">Build your BASELOG profile</string>
     <string name="onboarding_body">Choose the name and club you will carry across your ballpark logs.</string>
     <string name="onboarding_nickname_label">Nickname</string>

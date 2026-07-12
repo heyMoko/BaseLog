@@ -3,7 +3,6 @@ package com.mokostudio.baselog.feature.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mokostudio.baselog.core.auth.AuthRepository
-import com.mokostudio.baselog.core.user.UserProfile
 import com.mokostudio.baselog.core.user.UserProfileRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -21,17 +20,27 @@ class HomeViewModel @Inject constructor(
     val uiState: StateFlow<HomeUiState> =
         userProfileRepository.observeCurrentUserProfile()
             .map { profile ->
-                HomeUiState(
-                    nickname = profile?.nickname.orEmpty(),
-                    favoriteTeamName = profile?.favoriteTeam?.displayName.orEmpty(),
-                    bio = profile?.bio.orEmpty(),
-                    hasProfile = profile != null
-                )
+                if (profile == null) {
+                    HomeUiState(
+                        isLoading = false,
+                        isProfileUnavailable = true
+                    )
+                } else {
+                    HomeUiState(
+                        isLoading = false,
+                        profile = HomeProfileSummary(
+                            nickname = profile.nickname,
+                            favoriteTeamName = profile.favoriteTeam.displayName,
+                            bio = profile.bio,
+                            email = profile.email
+                        )
+                    )
+                }
             }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5_000),
-                initialValue = HomeUiState()
+                initialValue = HomeUiState(isLoading = true)
             )
 
     fun signOut() {
@@ -42,8 +51,14 @@ class HomeViewModel @Inject constructor(
 }
 
 data class HomeUiState(
-    val nickname: String = "",
-    val favoriteTeamName: String = "",
-    val bio: String = "",
-    val hasProfile: Boolean = false
+    val isLoading: Boolean = false,
+    val profile: HomeProfileSummary? = null,
+    val isProfileUnavailable: Boolean = false
+)
+
+data class HomeProfileSummary(
+    val nickname: String,
+    val favoriteTeamName: String,
+    val bio: String,
+    val email: String
 )

@@ -17,5 +17,8 @@ enum class BaseballTeam(
 
     companion object {
         fun fromId(id: String): BaseballTeam? = entries.firstOrNull { it.id == id }
+
+        fun fromDisplayName(displayName: String): BaseballTeam? =
+            entries.firstOrNull { it.displayName.equals(displayName, ignoreCase = true) }
     }
 }
