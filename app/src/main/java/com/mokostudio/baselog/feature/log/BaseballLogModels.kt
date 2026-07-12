@@ -6,7 +6,7 @@ import java.time.LocalDate
 data class BaseballLogEntry(
     val id: String,
     val attendedDate: LocalDate,
-    val team: BaseballTeam,
+    val opponentTeam: BaseballTeam,
     val result: BaseballGameResult
 )
 
@@ -37,6 +37,6 @@ data class WinRateSummary(
 
 data class BaseballLogDraft(
     val attendedDate: LocalDate,
-    val team: BaseballTeam,
+    val opponentTeam: BaseballTeam,
     val result: BaseballGameResult
 )

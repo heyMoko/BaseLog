@@ -28,6 +28,8 @@ import com.mokostudio.baselog.ui.theme.BaseLogTheme
 @Composable
 fun HomeRoute(
     onEditProfileClick: () -> Unit,
+    onViewLogsClick: () -> Unit,
+    onAddLogClick: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
@@ -41,6 +43,8 @@ fun HomeRoute(
             modifier = Modifier.padding(innerPadding),
             uiState = uiState,
             onEditProfileClick = onEditProfileClick,
+            onViewLogsClick = onViewLogsClick,
+            onAddLogClick = onAddLogClick,
             onSignOutClick = viewModel::signOut
         )
     }
@@ -50,6 +54,8 @@ fun HomeRoute(
 internal fun HomeScreen(
     uiState: HomeUiState,
     onEditProfileClick: () -> Unit,
+    onViewLogsClick: () -> Unit,
+    onAddLogClick: () -> Unit,
     onSignOutClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -132,6 +138,30 @@ internal fun HomeScreen(
                         }
                     }
                 }
+
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.home_log_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = stringResource(id = R.string.home_log_body),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        OutlinedButton(onClick = onViewLogsClick) {
+                            Text(text = stringResource(id = R.string.home_view_logs))
+                        }
+                        Button(onClick = onAddLogClick) {
+                            Text(text = stringResource(id = R.string.home_add_log))
+                        }
+                    }
+                }
             } else if (uiState.isProfileUnavailable) {
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Column(
@@ -176,6 +206,8 @@ private fun HomeScreenPreview() {
                 )
             ),
             onEditProfileClick = {},
+            onViewLogsClick = {},
+            onAddLogClick = {},
             onSignOutClick = {}
         )
     }
@@ -190,6 +222,8 @@ private fun HomeScreenUnavailablePreview() {
                 isProfileUnavailable = true
             ),
             onEditProfileClick = {},
+            onViewLogsClick = {},
+            onAddLogClick = {},
             onSignOutClick = {}
         )
     }

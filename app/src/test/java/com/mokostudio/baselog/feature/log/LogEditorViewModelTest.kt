@@ -38,14 +38,13 @@ class LogEditorViewModelTest {
 
         val viewModel = LogEditorViewModel(
             baseballLogRepository = FakeBaseballLogRepository(),
-            userProfileRepository = repository,
-            currentDateProvider = { LocalDate.parse("2026-07-12") }
+            userProfileRepository = repository
         )
         advanceUntilIdle()
 
         assertFalse(viewModel.uiState.value.isLoading)
         assertEquals(BaseballTeam.LgTwins, viewModel.uiState.value.favoriteTeam)
-        assertEquals(LocalDate.parse("2026-07-12"), viewModel.uiState.value.attendedDate)
+        assertEquals(LocalDate.now(), viewModel.uiState.value.attendedDate)
     }
 
     @Test
@@ -53,21 +52,20 @@ class LogEditorViewModelTest {
         val logRepository = FakeBaseballLogRepository()
         val viewModel = LogEditorViewModel(
             baseballLogRepository = logRepository,
-            userProfileRepository = FakeUserProfileRepository(),
-            currentDateProvider = { LocalDate.parse("2026-07-12") }
+            userProfileRepository = FakeUserProfileRepository()
         )
         advanceUntilIdle()
         val eventDeferred = async { viewModel.events.first() }
 
-        viewModel.onFavoriteTeamSelected(BaseballTeam.LgTwins)
+        viewModel.onOpponentTeamSelected(BaseballTeam.DoosanBears)
         viewModel.onResultSelected(BaseballGameResult.Win)
         viewModel.saveLog()
         advanceUntilIdle()
 
         assertEquals(
             BaseballLogDraft(
-                attendedDate = LocalDate.parse("2026-07-12"),
-                team = BaseballTeam.LgTwins,
+                attendedDate = LocalDate.now(),
+                opponentTeam = BaseballTeam.DoosanBears,
                 result = BaseballGameResult.Win
             ),
             logRepository.savedDraft
@@ -79,12 +77,11 @@ class LogEditorViewModelTest {
     fun saveLog_requiresResult() = runTest {
         val viewModel = LogEditorViewModel(
             baseballLogRepository = FakeBaseballLogRepository(),
-            userProfileRepository = FakeUserProfileRepository(),
-            currentDateProvider = { LocalDate.parse("2026-07-12") }
+            userProfileRepository = FakeUserProfileRepository()
         )
         advanceUntilIdle()
 
-        viewModel.onFavoriteTeamSelected(BaseballTeam.LgTwins)
+        viewModel.onOpponentTeamSelected(BaseballTeam.DoosanBears)
         viewModel.saveLog()
 
         assertEquals(
@@ -94,17 +91,71 @@ class LogEditorViewModelTest {
     }
 
     @Test
-    fun submitEnabled_requiresTeamAndResult() = runTest {
+    fun onOpponentTeamSelected_rejectsFavoriteTeam() = runTest {
+        val repository = FakeUserProfileRepository().apply {
+            profile.value = UserProfile(
+                nickname = "Moko",
+                favoriteTeam = BaseballTeam.LgTwins,
+                bio = "",
+                email = "moko@example.com",
+                photoUrl = ""
+            )
+        }
         val viewModel = LogEditorViewModel(
             baseballLogRepository = FakeBaseballLogRepository(),
-            userProfileRepository = FakeUserProfileRepository(),
-            currentDateProvider = { LocalDate.parse("2026-07-12") }
+            userProfileRepository = repository
+        )
+        advanceUntilIdle()
+
+        viewModel.onOpponentTeamSelected(BaseballTeam.LgTwins)
+
+        assertEquals(
+            "Your team cannot be selected as the opposing team.",
+            viewModel.uiState.value.errorMessage
+        )
+        assertEquals(null, viewModel.uiState.value.opponentTeam)
+    }
+
+    @Test
+    fun saveLog_rejectsFavoriteTeamAsOpponent() = runTest {
+        val logRepository = FakeBaseballLogRepository()
+        val repository = FakeUserProfileRepository().apply {
+            profile.value = UserProfile(
+                nickname = "Moko",
+                favoriteTeam = BaseballTeam.LgTwins,
+                bio = "",
+                email = "moko@example.com",
+                photoUrl = ""
+            )
+        }
+        val viewModel = LogEditorViewModel(
+            baseballLogRepository = logRepository,
+            userProfileRepository = repository
+        )
+        advanceUntilIdle()
+
+        viewModel.onResultSelected(BaseballGameResult.Win)
+        viewModel.onOpponentTeamSelected(BaseballTeam.LgTwins)
+        viewModel.saveLog()
+
+        assertEquals(
+            "Your team cannot be selected as the opposing team.",
+            viewModel.uiState.value.errorMessage
+        )
+        assertEquals(null, logRepository.savedDraft)
+    }
+
+    @Test
+    fun submitEnabled_requiresOpponentAndResult() = runTest {
+        val viewModel = LogEditorViewModel(
+            baseballLogRepository = FakeBaseballLogRepository(),
+            userProfileRepository = FakeUserProfileRepository()
         )
         advanceUntilIdle()
 
         assertFalse(viewModel.uiState.value.isSubmitEnabled)
 
-        viewModel.onFavoriteTeamSelected(BaseballTeam.LgTwins)
+        viewModel.onOpponentTeamSelected(BaseballTeam.DoosanBears)
         assertFalse(viewModel.uiState.value.isSubmitEnabled)
 
         viewModel.onResultSelected(BaseballGameResult.Win)

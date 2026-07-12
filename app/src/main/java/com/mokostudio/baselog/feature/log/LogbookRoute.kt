@@ -1,0 +1,255 @@
+package com.mokostudio.baselog.feature.log
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.mokostudio.baselog.R
+import com.mokostudio.baselog.core.user.BaseballTeam
+import com.mokostudio.baselog.ui.theme.BaseLogTheme
+import java.time.LocalDate
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LogbookRoute(
+    onBackClick: () -> Unit,
+    onAddLogClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: LogbookViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.background,
+        topBar = {
+            TopAppBar(
+                title = { Text(text = stringResource(id = R.string.logbook_title)) },
+                navigationIcon = {
+                    TextButton(onClick = onBackClick) {
+                        Text(text = stringResource(id = R.string.profile_edit_back))
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
+        LogbookScreen(
+            innerPadding = innerPadding,
+            uiState = uiState,
+            onYearSelected = viewModel::onYearSelected,
+            onAddLogClick = onAddLogClick
+        )
+    }
+}
+
+@Composable
+internal fun LogbookScreen(
+    innerPadding: PaddingValues,
+    uiState: LogbookUiState,
+    onYearSelected: (Int?) -> Unit,
+    onAddLogClick: () -> Unit
+) {
+    if (uiState.isLoading) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+            verticalArrangement = Arrangement.Center
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding),
+        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item {
+            Text(
+                text = stringResource(id = R.string.logbook_heading),
+                style = MaterialTheme.typography.headlineLarge,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        }
+
+        item {
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.logbook_summary_title),
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                    if (uiState.summary.hasGames) {
+                        Text(
+                            text = uiState.summary.winRatePercent?.let { "$it%" }
+                                ?: stringResource(id = R.string.logbook_pending),
+                            style = MaterialTheme.typography.displaySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = stringResource(
+                                id = R.string.logbook_summary_record,
+                                uiState.summary.wins,
+                                uiState.summary.losses,
+                                uiState.summary.draws
+                            ),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        uiState.summary.message?.let { message ->
+                            Text(
+                                text = message,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    } else {
+                        Text(
+                            text = stringResource(id = R.string.logbook_empty_body),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedButton(
+                    onClick = { onYearSelected(null) },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(text = stringResource(id = R.string.logbook_filter_all))
+                }
+                uiState.availableYears.take(3).forEach { year ->
+                    OutlinedButton(
+                        onClick = { onYearSelected(year) },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(text = year.toString())
+                    }
+                }
+            }
+        }
+
+        item {
+            Button(
+                onClick = onAddLogClick,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = stringResource(id = R.string.logbook_add_action))
+            }
+        }
+
+        if (uiState.isEmpty) {
+            item {
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.logbook_empty_title),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Text(
+                            text = stringResource(id = R.string.logbook_empty_body),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        } else {
+            items(uiState.logs, key = { it.id }) { log ->
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = log.attendedDate.toString(),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Text(
+                            text = stringResource(
+                                id = R.string.logbook_opponent,
+                                log.opponentTeam.displayName
+                            ),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = log.result.displayName(),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun LogbookScreenPreview() {
+    BaseLogTheme {
+        LogbookScreen(
+            innerPadding = PaddingValues(),
+            uiState = LogbookUiState(
+                logs = listOf(
+                    BaseballLogEntry(
+                        id = "1",
+                        attendedDate = LocalDate.parse("2026-07-12"),
+                        opponentTeam = BaseballTeam.DoosanBears,
+                        result = BaseballGameResult.Win
+                    )
+                ),
+                availableYears = listOf(2026, 2025),
+                summary = WinRateSummary(
+                    totalGames = 1,
+                    wins = 1,
+                    winRatePercent = 100,
+                    message = "You're a good luck charm!"
+                )
+            ),
+            onYearSelected = {},
+            onAddLogClick = {}
+        )
+    }
+}

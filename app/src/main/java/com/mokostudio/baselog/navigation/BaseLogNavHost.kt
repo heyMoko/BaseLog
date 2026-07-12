@@ -14,6 +14,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mokostudio.baselog.core.startup.StartupDestination
 import com.mokostudio.baselog.feature.auth.login.LoginRoute
 import com.mokostudio.baselog.feature.home.HomeRoute
+import com.mokostudio.baselog.feature.log.LogEditorRoute
+import com.mokostudio.baselog.feature.log.LogbookRoute
 import com.mokostudio.baselog.feature.onboarding.OnboardingMode
 import com.mokostudio.baselog.feature.onboarding.OnboardingRoute
 import com.mokostudio.baselog.feature.splash.SplashRoute
@@ -99,6 +101,35 @@ fun BaseLogNavHost(
             HomeRoute(
                 onEditProfileClick = {
                     navController.navigate(BaseLogDestination.EditProfile.route)
+                },
+                onViewLogsClick = {
+                    navController.navigate(BaseLogDestination.Logbook.route)
+                },
+                onAddLogClick = {
+                    navController.navigate(BaseLogDestination.CreateLog.route)
+                }
+            )
+        }
+
+        composable(BaseLogDestination.Logbook.route) {
+            LogbookRoute(
+                onBackClick = navController::popBackStack,
+                onAddLogClick = {
+                    navController.navigate(BaseLogDestination.CreateLog.route)
+                }
+            )
+        }
+
+        composable(BaseLogDestination.CreateLog.route) {
+            LogEditorRoute(
+                onBackClick = navController::popBackStack,
+                onSaved = {
+                    navController.navigate(BaseLogDestination.Logbook.route) {
+                        popUpTo(BaseLogDestination.CreateLog.route) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
                 }
             )
         }
@@ -116,6 +147,8 @@ internal fun StartupDestination.allowedRoutes(): Set<String> = when (this) {
     StartupDestination.Onboarding -> setOf(BaseLogDestination.Onboarding.route)
     StartupDestination.Home -> setOf(
         BaseLogDestination.Home.route,
-        BaseLogDestination.EditProfile.route
+        BaseLogDestination.EditProfile.route,
+        BaseLogDestination.Logbook.route,
+        BaseLogDestination.CreateLog.route
     )
 }

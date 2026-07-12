@@ -62,8 +62,8 @@ class FirebaseBaseballLogRepository @Inject constructor(
         val logData = hashMapOf<String, Any>(
             FIELD_ATTENDED_DATE to log.attendedDate.toString(),
             FIELD_ATTENDED_YEAR to log.attendedDate.year,
-            FIELD_TEAM_ID to log.team.id,
-            FIELD_TEAM_NAME to log.team.displayName,
+            FIELD_TEAM_ID to log.opponentTeam.id,
+            FIELD_TEAM_NAME to log.opponentTeam.displayName,
             FIELD_RESULT to log.result.name,
             FIELD_CREATED_AT to FieldValue.serverTimestamp(),
             FIELD_UPDATED_AT to FieldValue.serverTimestamp()
@@ -103,7 +103,7 @@ private fun DocumentSnapshot.toBaseballLogEntry(): BaseballLogEntry? {
     val attendedDate = getString(FIELD_ATTENDED_DATE)
         ?.let(LocalDate::parse)
         ?: return null
-    val team = resolveTeam() ?: return null
+    val opponentTeam = resolveTeam() ?: return null
     val result = getString(FIELD_RESULT)
         ?.let(BaseballGameResult::fromStorageValue)
         ?: return null
@@ -111,7 +111,7 @@ private fun DocumentSnapshot.toBaseballLogEntry(): BaseballLogEntry? {
     return BaseballLogEntry(
         id = id,
         attendedDate = attendedDate,
-        team = team,
+        opponentTeam = opponentTeam,
         result = result
     )
 }

@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mokostudio.baselog.core.user.BaseballTeam
 import com.mokostudio.baselog.core.user.UserProfileRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.LocalDate
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -15,14 +17,14 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class LogEditorViewModel(
+@HiltViewModel
+class LogEditorViewModel @Inject constructor(
     private val baseballLogRepository: BaseballLogRepository,
-    private val userProfileRepository: UserProfileRepository,
-    private val currentDateProvider: () -> LocalDate = LocalDate::now
+    private val userProfileRepository: UserProfileRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(
         LogEditorUiState(
-            attendedDate = currentDateProvider()
+            attendedDate = LocalDate.now()
         )
     )
     val uiState: StateFlow<LogEditorUiState> = _uiState.asStateFlow()
@@ -36,6 +38,7 @@ class LogEditorViewModel(
             _uiState.update { state ->
                 state.copy(
                     favoriteTeam = profile?.favoriteTeam,
+                    opponentTeam = state.opponentTeam?.takeUnless { it == profile?.favoriteTeam },
                     isLoading = false
                 )
             }
@@ -51,10 +54,13 @@ class LogEditorViewModel(
         }
     }
 
-    fun onFavoriteTeamSelected(team: BaseballTeam) {
+    fun onOpponentTeamSelected(team: BaseballTeam) {
         _uiState.update { state ->
+            if (team == state.favoriteTeam) {
+                return@update state.copy(errorMessage = LOG_EDITOR_ERROR_SAME_TEAM)
+            }
             state.copy(
-                favoriteTeam = team,
+                opponentTeam = team,
                 errorMessage = null
             )
         }
@@ -71,12 +77,17 @@ class LogEditorViewModel(
 
     fun saveLog() {
         val state = _uiState.value
-        val team = state.favoriteTeam
+        val opponentTeam = state.opponentTeam
         val result = state.result
 
         when {
-            team == null -> {
-                _uiState.update { it.copy(errorMessage = LOG_EDITOR_ERROR_TEAM) }
+            opponentTeam == null -> {
+                _uiState.update { it.copy(errorMessage = LOG_EDITOR_ERROR_OPPONENT) }
+                return
+            }
+
+            opponentTeam == state.favoriteTeam -> {
+                _uiState.update { it.copy(errorMessage = LOG_EDITOR_ERROR_SAME_TEAM) }
                 return
             }
 
@@ -97,7 +108,7 @@ class LogEditorViewModel(
             baseballLogRepository.saveLog(
                 BaseballLogDraft(
                     attendedDate = state.attendedDate,
-                    team = team,
+                    opponentTeam = opponentTeam,
                     result = result
                 )
             ).onSuccess {
@@ -118,19 +129,21 @@ class LogEditorViewModel(
 data class LogEditorUiState(
     val attendedDate: LocalDate,
     val favoriteTeam: BaseballTeam? = null,
+    val opponentTeam: BaseballTeam? = null,
     val result: BaseballGameResult? = null,
     val isLoading: Boolean = true,
     val isSaving: Boolean = false,
     val errorMessage: String? = null
 ) {
     val isSubmitEnabled: Boolean
-        get() = !isLoading && !isSaving && favoriteTeam != null && result != null
+        get() = !isLoading && !isSaving && opponentTeam != null && result != null
 }
 
 sealed interface LogEditorEvent {
     data object Saved : LogEditorEvent
 }
 
-private const val LOG_EDITOR_ERROR_TEAM = "Choose your team before saving this game."
+private const val LOG_EDITOR_ERROR_OPPONENT = "Choose the opposing team before saving this game."
+private const val LOG_EDITOR_ERROR_SAME_TEAM = "Your team cannot be selected as the opposing team."
 private const val LOG_EDITOR_ERROR_RESULT = "Select a result before saving this game."
 private const val LOG_EDITOR_ERROR_UNKNOWN = "We couldn't save this game log. Try again."

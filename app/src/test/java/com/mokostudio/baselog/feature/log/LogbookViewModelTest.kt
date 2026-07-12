@@ -93,7 +93,7 @@ class LogbookViewModelTest {
         return BaseballLogEntry(
             id = id,
             attendedDate = LocalDate.parse(date),
-            team = BaseballTeam.LgTwins,
+            opponentTeam = BaseballTeam.LgTwins,
             result = result
         )
     }
