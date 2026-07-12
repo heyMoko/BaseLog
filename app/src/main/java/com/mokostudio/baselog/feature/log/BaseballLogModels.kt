@@ -13,7 +13,9 @@ data class BaseballLogEntry(
 enum class BaseballGameResult {
     Win,
     Loss,
-    Draw
+    Draw;
+
+    companion object
 }
 
 data class WinRateSummary(

@@ -16,6 +16,8 @@ import com.mokostudio.baselog.core.startup.DefaultAppStartupRepository
 import com.mokostudio.baselog.core.startup.FirebaseAuthStateDataSource
 import com.mokostudio.baselog.core.user.FirebaseUserProfileRepository
 import com.mokostudio.baselog.core.user.UserProfileRepository
+import com.mokostudio.baselog.feature.log.BaseballLogRepository
+import com.mokostudio.baselog.feature.log.FirebaseBaseballLogRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -50,6 +52,12 @@ abstract class AppBindModule {
     abstract fun bindUserProfileRepository(
         impl: FirebaseUserProfileRepository
     ): UserProfileRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindBaseballLogRepository(
+        impl: FirebaseBaseballLogRepository
+    ): BaseballLogRepository
 }
 
 @Module
