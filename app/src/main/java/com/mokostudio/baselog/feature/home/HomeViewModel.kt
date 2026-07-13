@@ -4,44 +4,72 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mokostudio.baselog.core.auth.AuthRepository
 import com.mokostudio.baselog.core.user.UserProfileRepository
+import com.mokostudio.baselog.feature.log.BaseballGameResult
+import com.mokostudio.baselog.feature.log.BaseballLogRepository
+import com.mokostudio.baselog.feature.log.WinRateCalculator
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.LocalDate
 import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val authRepository: AuthRepository,
-    userProfileRepository: UserProfileRepository
+    userProfileRepository: UserProfileRepository,
+    baseballLogRepository: BaseballLogRepository
 ) : ViewModel() {
     val uiState: StateFlow<HomeUiState> =
-        userProfileRepository.observeCurrentUserProfile()
-            .map { profile ->
-                if (profile == null) {
-                    HomeUiState(
-                        isLoading = false,
-                        isProfileUnavailable = true
+        combine(
+            userProfileRepository.observeCurrentUserProfile(),
+            baseballLogRepository.observeLogs()
+        ) { profile, logs ->
+            if (profile == null) {
+                HomeUiState(
+                    isLoading = false,
+                    isProfileUnavailable = true
+                )
+            } else {
+                val currentYear = LocalDate.now().year
+                val overallSummary = WinRateCalculator.calculate(logs = logs)
+                val yearlySummary = WinRateCalculator.calculate(logs = logs, year = currentYear)
+
+                HomeUiState(
+                    isLoading = false,
+                    profile = HomeProfileSummary(
+                        nickname = profile.nickname,
+                        favoriteTeamName = profile.favoriteTeam.displayName,
+                        bio = profile.bio,
+                        email = profile.email
+                    ),
+                    logSummary = HomeLogSummary(
+                        totalGames = logs.size,
+                        overallWinRatePercent = overallSummary.winRatePercent,
+                        overallRecord = overallSummary.toRecordText(),
+                        overallMessage = overallSummary.message,
+                        currentYear = currentYear,
+                        currentYearWinRatePercent = yearlySummary.winRatePercent,
+                        currentYearRecord = yearlySummary.toRecordText(),
+                        hasLogs = overallSummary.hasGames,
+                        recentLogs = logs.take(3).map { log ->
+                            HomeRecentLog(
+                                id = log.id,
+                                attendedDate = log.attendedDate.toString(),
+                                opponentTeamName = log.opponentTeam.displayName,
+                                resultLabel = log.result.toLabel()
+                            )
+                        }
                     )
-                } else {
-                    HomeUiState(
-                        isLoading = false,
-                        profile = HomeProfileSummary(
-                            nickname = profile.nickname,
-                            favoriteTeamName = profile.favoriteTeam.displayName,
-                            bio = profile.bio,
-                            email = profile.email
-                        )
-                    )
-                }
+                )
             }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5_000),
-                initialValue = HomeUiState(isLoading = true)
-            )
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = HomeUiState(isLoading = true)
+        )
 
     fun signOut() {
         viewModelScope.launch {
@@ -53,6 +81,7 @@ class HomeViewModel @Inject constructor(
 data class HomeUiState(
     val isLoading: Boolean = false,
     val profile: HomeProfileSummary? = null,
+    val logSummary: HomeLogSummary = HomeLogSummary(),
     val isProfileUnavailable: Boolean = false
 )
 
@@ -62,3 +91,34 @@ data class HomeProfileSummary(
     val bio: String,
     val email: String
 )
+
+data class HomeLogSummary(
+    val totalGames: Int = 0,
+    val overallWinRatePercent: Int? = null,
+    val overallRecord: String? = null,
+    val overallMessage: String? = null,
+    val currentYear: Int = LocalDate.now().year,
+    val currentYearWinRatePercent: Int? = null,
+    val currentYearRecord: String? = null,
+    val recentLogs: List<HomeRecentLog> = emptyList(),
+    val hasLogs: Boolean = false
+)
+
+data class HomeRecentLog(
+    val id: String,
+    val attendedDate: String,
+    val opponentTeamName: String,
+    val resultLabel: String
+)
+
+private fun com.mokostudio.baselog.feature.log.WinRateSummary.toRecordText(): String? {
+    if (!hasGames) return null
+
+    return "${wins}W ${losses}L ${draws}D"
+}
+
+private fun BaseballGameResult.toLabel(): String = when (this) {
+    BaseballGameResult.Win -> "Win"
+    BaseballGameResult.Loss -> "Loss"
+    BaseballGameResult.Draw -> "Draw"
+}

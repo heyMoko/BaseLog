@@ -16,6 +16,16 @@
     <string name="home_bio_empty">Add a short intro so other fans know what kind of ballpark visitor you are.</string>
     <string name="home_next_title">Profile ready for game day</string>
     <string name="home_next_body">Your account is ready. Next we can connect baseball log creation, win-rate history, and friend comparisons on top of this profile.</string>
+    <string name="home_dashboard_title">Your game-day dashboard</string>
+    <string name="home_dashboard_overall">Overall win rate</string>
+    <string name="home_dashboard_year">%1$d season win rate</string>
+    <string name="home_dashboard_total_games">Total game logs</string>
+    <string name="home_dashboard_total_caption">Saved baseball log entries</string>
+    <string name="home_dashboard_pending">Pending</string>
+    <string name="home_dashboard_empty">Add your first baseball log to unlock win-rate summaries on Home.</string>
+    <string name="home_recent_logs_title">Recent game logs</string>
+    <string name="home_recent_logs_empty">Your recent baseball logs will appear here after you save a game day.</string>
+    <string name="home_recent_logs_opponent">vs %1$s</string>
     <string name="home_log_title">Start your baseball log</string>
     <string name="home_log_body">Save game days, track your record, and check your win rate by season.</string>
     <string name="home_view_logs">View logs</string>

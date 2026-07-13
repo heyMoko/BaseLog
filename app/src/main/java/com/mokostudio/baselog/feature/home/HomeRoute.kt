@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -70,6 +72,7 @@ internal fun HomeScreen(
         }
 
         Column(
+            modifier = Modifier.verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
@@ -142,6 +145,99 @@ internal fun HomeScreen(
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Column(
                         modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.home_dashboard_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        if (uiState.logSummary.hasLogs) {
+                            HomeMetricRow(
+                                title = stringResource(id = R.string.home_dashboard_overall),
+                                value = uiState.logSummary.overallWinRatePercent?.let { "$it%" }
+                                    ?: stringResource(id = R.string.home_dashboard_pending),
+                                supporting = uiState.logSummary.overallRecord.orEmpty()
+                            )
+                            HomeMetricRow(
+                                title = stringResource(
+                                    id = R.string.home_dashboard_year,
+                                    uiState.logSummary.currentYear
+                                ),
+                                value = uiState.logSummary.currentYearWinRatePercent?.let { "$it%" }
+                                    ?: stringResource(id = R.string.home_dashboard_pending),
+                                supporting = uiState.logSummary.currentYearRecord.orEmpty()
+                            )
+                            HomeMetricRow(
+                                title = stringResource(id = R.string.home_dashboard_total_games),
+                                value = uiState.logSummary.totalGames.toString(),
+                                supporting = stringResource(id = R.string.home_dashboard_total_caption)
+                            )
+                            uiState.logSummary.overallMessage?.let { message ->
+                                Text(
+                                    text = message,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        } else {
+                            Text(
+                                text = stringResource(id = R.string.home_dashboard_empty),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.home_recent_logs_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        if (uiState.logSummary.recentLogs.isEmpty()) {
+                            Text(
+                                text = stringResource(id = R.string.home_recent_logs_empty),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        } else {
+                            uiState.logSummary.recentLogs.forEach { log ->
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text(
+                                        text = log.attendedDate,
+                                        style = MaterialTheme.typography.titleSmall,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = stringResource(
+                                            id = R.string.home_recent_logs_opponent,
+                                            log.opponentTeamName
+                                        ),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    Text(
+                                        text = log.resultLabel,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
@@ -192,6 +288,31 @@ internal fun HomeScreen(
     }
 }
 
+@Composable
+private fun HomeMetricRow(
+    title: String,
+    value: String,
+    supporting: String
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Text(
+            text = supporting,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun HomeScreenPreview() {
@@ -203,6 +324,30 @@ private fun HomeScreenPreview() {
                     favoriteTeamName = "LG Twins",
                     bio = "Always tracking weekday games.",
                     email = "moko@example.com"
+                ),
+                logSummary = HomeLogSummary(
+                    totalGames = 12,
+                    overallWinRatePercent = 66,
+                    overallRecord = "6W 3L 3D",
+                    overallMessage = "Your game-day instincts are solid.",
+                    currentYear = 2026,
+                    currentYearWinRatePercent = 75,
+                    currentYearRecord = "3W 1L 1D",
+                    recentLogs = listOf(
+                        HomeRecentLog(
+                            id = "1",
+                            attendedDate = "2026-07-12",
+                            opponentTeamName = "Doosan Bears",
+                            resultLabel = "Win"
+                        ),
+                        HomeRecentLog(
+                            id = "2",
+                            attendedDate = "2026-07-06",
+                            opponentTeamName = "SSG Landers",
+                            resultLabel = "Draw"
+                        )
+                    ),
+                    hasLogs = true
                 )
             ),
             onEditProfileClick = {},

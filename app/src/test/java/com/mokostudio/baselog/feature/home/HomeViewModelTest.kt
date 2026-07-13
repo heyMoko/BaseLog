@@ -5,7 +5,12 @@ import com.mokostudio.baselog.core.user.BaseballTeam
 import com.mokostudio.baselog.core.user.UserProfile
 import com.mokostudio.baselog.core.user.UserProfileDraft
 import com.mokostudio.baselog.core.user.UserProfileRepository
+import com.mokostudio.baselog.feature.log.BaseballGameResult
+import com.mokostudio.baselog.feature.log.BaseballLogDraft
+import com.mokostudio.baselog.feature.log.BaseballLogEntry
+import com.mokostudio.baselog.feature.log.BaseballLogRepository
 import com.mokostudio.baselog.testutil.MainDispatcherRule
+import java.time.LocalDate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -28,7 +33,8 @@ class HomeViewModelTest {
         val repository = FakeAuthRepository()
         val viewModel = HomeViewModel(
             authRepository = repository,
-            userProfileRepository = FakeUserProfileRepository()
+            userProfileRepository = FakeUserProfileRepository(),
+            baseballLogRepository = FakeBaseballLogRepository()
         )
 
         viewModel.signOut()
@@ -42,7 +48,8 @@ class HomeViewModelTest {
         val userProfileRepository = FakeUserProfileRepository()
         val viewModel = HomeViewModel(
             authRepository = FakeAuthRepository(),
-            userProfileRepository = userProfileRepository
+            userProfileRepository = userProfileRepository,
+            baseballLogRepository = FakeBaseballLogRepository()
         )
         val collectionJob: Job = backgroundScope.launch {
             viewModel.uiState.collect {}
@@ -68,7 +75,8 @@ class HomeViewModelTest {
     fun uiState_marksProfileUnavailableWhenRepositoryReturnsNull() = runTest {
         val viewModel = HomeViewModel(
             authRepository = FakeAuthRepository(),
-            userProfileRepository = FakeUserProfileRepository()
+            userProfileRepository = FakeUserProfileRepository(),
+            baseballLogRepository = FakeBaseballLogRepository()
         )
         val collectionJob: Job = backgroundScope.launch {
             viewModel.uiState.collect {}
@@ -78,6 +86,44 @@ class HomeViewModelTest {
 
         assertTrue(viewModel.uiState.value.isProfileUnavailable)
         assertTrue(viewModel.uiState.value.profile == null)
+        collectionJob.cancel()
+    }
+
+    @Test
+    fun uiState_includesLogSummaryAndRecentLogs() = runTest {
+        val userProfileRepository = FakeUserProfileRepository()
+        val baseballLogRepository = FakeBaseballLogRepository()
+        val currentYear = LocalDate.now().year
+        val viewModel = HomeViewModel(
+            authRepository = FakeAuthRepository(),
+            userProfileRepository = userProfileRepository,
+            baseballLogRepository = baseballLogRepository
+        )
+        val collectionJob: Job = backgroundScope.launch {
+            viewModel.uiState.collect {}
+        }
+
+        userProfileRepository.profile.value = UserProfile(
+            nickname = "Moko",
+            favoriteTeam = BaseballTeam.LgTwins,
+            bio = "Tracks weekday games.",
+            email = "moko@example.com",
+            photoUrl = ""
+        )
+        baseballLogRepository.logs.value = listOf(
+            logEntry("1", "$currentYear-07-12", BaseballTeam.DoosanBears, BaseballGameResult.Win),
+            logEntry("2", "$currentYear-07-06", BaseballTeam.SsgLanders, BaseballGameResult.Draw),
+            logEntry("3", "$currentYear-07-01", BaseballTeam.KtWiz, BaseballGameResult.Loss),
+            logEntry("4", "${currentYear - 1}-09-10", BaseballTeam.KiaTigers, BaseballGameResult.Win)
+        )
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.logSummary.hasLogs)
+        assertEquals(4, viewModel.uiState.value.logSummary.totalGames)
+        assertEquals(66, viewModel.uiState.value.logSummary.overallWinRatePercent)
+        assertEquals("1W 1L 1D", viewModel.uiState.value.logSummary.currentYearRecord)
+        assertEquals(3, viewModel.uiState.value.logSummary.recentLogs.size)
+        assertEquals("$currentYear-07-12", viewModel.uiState.value.logSummary.recentLogs.first().attendedDate)
         collectionJob.cancel()
     }
 
@@ -105,5 +151,37 @@ class HomeViewModelTest {
         override suspend fun saveProfile(profile: UserProfileDraft): Result<Unit> {
             return Result.success(Unit)
         }
+    }
+
+    private class FakeBaseballLogRepository : BaseballLogRepository {
+        val logs = MutableStateFlow<List<BaseballLogEntry>>(emptyList())
+
+        override fun observeLogs(): Flow<List<BaseballLogEntry>> = logs
+
+        override fun observeLog(logId: String): Flow<BaseballLogEntry?> =
+            MutableStateFlow(logs.value.firstOrNull { it.id == logId })
+
+        override suspend fun createLog(log: BaseballLogDraft): Result<Unit> = Result.success(Unit)
+
+        override suspend fun updateLog(
+            logId: String,
+            log: BaseballLogDraft
+        ): Result<Unit> = Result.success(Unit)
+
+        override suspend fun deleteLog(logId: String): Result<Unit> = Result.success(Unit)
+    }
+
+    private fun logEntry(
+        id: String,
+        date: String,
+        opponentTeam: BaseballTeam,
+        result: BaseballGameResult
+    ): BaseballLogEntry {
+        return BaseballLogEntry(
+            id = id,
+            attendedDate = LocalDate.parse(date),
+            opponentTeam = opponentTeam,
+            result = result
+        )
     }
 }
