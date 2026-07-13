@@ -43,33 +43,50 @@ class FirebaseBaseballLogRepository @Inject constructor(
             .distinctUntilChanged()
     }
 
-    override suspend fun saveLog(log: BaseballLogDraft): Result<Unit> {
-        val auth = firebaseAuth ?: return Result.failure(
-            IllegalStateException("You need to be signed in before saving a game log.")
-        )
-        val db = firestore ?: return Result.failure(
-            IllegalStateException("Firestore is not configured. Check Firebase setup before saving logs.")
-        )
-        val user = auth.currentUser ?: return Result.failure(
-            IllegalStateException("You need to be signed in before saving a game log.")
-        )
+    override fun observeLog(logId: String): Flow<BaseballLogEntry?> {
+        val auth = firebaseAuth ?: return flowOf(null)
+        val db = firestore ?: return flowOf(null)
 
-        val document = db.collection(USERS_COLLECTION)
-            .document(user.uid)
-            .collection(LOGS_COLLECTION)
-            .document()
+        return auth.observeCurrentUserId()
+            .flatMapLatest { userId ->
+                if (userId == null) {
+                    flowOf(null)
+                } else {
+                    db.collection(USERS_COLLECTION)
+                        .document(userId)
+                        .collection(LOGS_COLLECTION)
+                        .document(logId)
+                        .observeLog()
+                }
+            }
+            .distinctUntilChanged()
+    }
 
-        val logData = hashMapOf<String, Any>(
-            FIELD_ATTENDED_DATE to log.attendedDate.toString(),
-            FIELD_ATTENDED_YEAR to log.attendedDate.year,
-            FIELD_TEAM_ID to log.opponentTeam.id,
-            FIELD_TEAM_NAME to log.opponentTeam.displayName,
-            FIELD_RESULT to log.result.name,
-            FIELD_CREATED_AT to FieldValue.serverTimestamp(),
-            FIELD_UPDATED_AT to FieldValue.serverTimestamp()
-        )
+    override suspend fun createLog(log: BaseballLogDraft): Result<Unit> {
+        val document = resolveLogsCollection(firebaseAuth, firestore)
+            .map { it.document() }
+            .getOrElse { return Result.failure(it) }
 
-        return document.awaitSet(logData)
+        return document.awaitSet(log.toDocumentData(includeCreatedAt = true))
+    }
+
+    override suspend fun updateLog(
+        logId: String,
+        log: BaseballLogDraft
+    ): Result<Unit> {
+        val document = resolveLogsCollection(firebaseAuth, firestore)
+            .map { it.document(logId) }
+            .getOrElse { return Result.failure(it) }
+
+        return document.awaitUpdate(log.toDocumentData(includeCreatedAt = false))
+    }
+
+    override suspend fun deleteLog(logId: String): Result<Unit> {
+        val document = resolveLogsCollection(firebaseAuth, firestore)
+            .map { it.document(logId) }
+            .getOrElse { return Result.failure(it) }
+
+        return document.awaitDelete()
     }
 }
 
@@ -91,6 +108,16 @@ private fun Query.observeLogs(): Flow<List<BaseballLogEntry>> = callbackFlow {
         val logs = snapshot?.documents.orEmpty()
             .mapNotNull { it.toBaseballLogEntry() }
         trySend(logs)
+    }
+
+    awaitClose {
+        registration.remove()
+    }
+}
+
+private fun DocumentReference.observeLog(): Flow<BaseballLogEntry?> = callbackFlow {
+    val registration = addSnapshotListener { snapshot, _ ->
+        trySend(snapshot?.toBaseballLogEntry())
     }
 
     awaitClose {
@@ -136,10 +163,73 @@ private suspend fun DocumentReference.awaitSet(
         }
 }
 
+private suspend fun DocumentReference.awaitUpdate(
+    data: Map<String, Any>
+): Result<Unit> = suspendCancellableCoroutine { continuation ->
+    update(data)
+        .addOnSuccessListener {
+            if (continuation.isActive) {
+                continuation.resume(Result.success(Unit))
+            }
+        }
+        .addOnFailureListener { error ->
+            if (continuation.isActive) {
+                continuation.resume(Result.failure(error))
+            }
+        }
+}
+
+private suspend fun DocumentReference.awaitDelete(): Result<Unit> = suspendCancellableCoroutine { continuation ->
+    delete()
+        .addOnSuccessListener {
+            if (continuation.isActive) {
+                continuation.resume(Result.success(Unit))
+            }
+        }
+        .addOnFailureListener { error ->
+            if (continuation.isActive) {
+                continuation.resume(Result.failure(error))
+            }
+        }
+}
+
 private fun BaseballGameResult.Companion.fromStorageValue(value: String): BaseballGameResult? {
     return BaseballGameResult.entries.firstOrNull { result ->
         result.name.equals(value, ignoreCase = true)
     }
+}
+
+private fun BaseballLogDraft.toDocumentData(includeCreatedAt: Boolean): Map<String, Any> {
+    return buildMap {
+        put(FIELD_ATTENDED_DATE, attendedDate.toString())
+        put(FIELD_ATTENDED_YEAR, attendedDate.year)
+        put(FIELD_TEAM_ID, opponentTeam.id)
+        put(FIELD_TEAM_NAME, opponentTeam.displayName)
+        put(FIELD_RESULT, result.name)
+        if (includeCreatedAt) {
+            put(FIELD_CREATED_AT, FieldValue.serverTimestamp())
+        }
+        put(FIELD_UPDATED_AT, FieldValue.serverTimestamp())
+    }
+}
+
+private fun resolveLogsCollection(
+    firebaseAuth: FirebaseAuth?,
+    firestore: FirebaseFirestore?
+) = runCatching {
+    val auth = firebaseAuth ?: throw IllegalStateException(
+        "You need to be signed in before managing a game log."
+    )
+    val db = firestore ?: throw IllegalStateException(
+        "Firestore is not configured. Check Firebase setup before managing logs."
+    )
+    val user = auth.currentUser ?: throw IllegalStateException(
+        "You need to be signed in before managing a game log."
+    )
+
+    db.collection(USERS_COLLECTION)
+        .document(user.uid)
+        .collection(LOGS_COLLECTION)
 }
 
 private const val USERS_COLLECTION = "users"

@@ -77,12 +77,71 @@ class LogbookViewModelTest {
         collectionJob.cancel()
     }
 
-    private class FakeBaseballLogRepository : BaseballLogRepository {
+    @Test
+    fun confirmDelete_deletesSelectedLogAndClearsDialog() = runTest {
+        val repository = FakeBaseballLogRepository()
+        val viewModel = LogbookViewModel(baseballLogRepository = repository)
+        val collectionJob = backgroundScope.launch {
+            viewModel.uiState.collect {}
+        }
+        val log = logEntry("1", "2026-07-01", BaseballGameResult.Win)
+        repository.logs.value = listOf(log)
+        advanceUntilIdle()
+
+        viewModel.onDeleteClick(log)
+        viewModel.confirmDelete()
+        advanceUntilIdle()
+
+        assertEquals("1", repository.deletedLogId)
+        assertEquals(null, viewModel.uiState.value.pendingDeleteLog)
+        assertEquals(null, viewModel.uiState.value.deleteErrorMessage)
+        collectionJob.cancel()
+    }
+
+    @Test
+    fun confirmDelete_keepsDialogOpenOnFailure() = runTest {
+        val repository = FakeBaseballLogRepository(
+            deleteResult = Result.failure(IllegalStateException("Delete failed"))
+        )
+        val viewModel = LogbookViewModel(baseballLogRepository = repository)
+        val collectionJob = backgroundScope.launch {
+            viewModel.uiState.collect {}
+        }
+        val log = logEntry("1", "2026-07-01", BaseballGameResult.Win)
+        repository.logs.value = listOf(log)
+        advanceUntilIdle()
+
+        viewModel.onDeleteClick(log)
+        viewModel.confirmDelete()
+        advanceUntilIdle()
+
+        assertEquals(log, viewModel.uiState.value.pendingDeleteLog)
+        assertEquals("Delete failed", viewModel.uiState.value.deleteErrorMessage)
+        collectionJob.cancel()
+    }
+
+    private class FakeBaseballLogRepository(
+        private val deleteResult: Result<Unit> = Result.success(Unit)
+    ) : BaseballLogRepository {
         val logs = MutableStateFlow<List<BaseballLogEntry>>(emptyList())
+        var deletedLogId: String? = null
 
         override fun observeLogs(): Flow<List<BaseballLogEntry>> = logs
 
-        override suspend fun saveLog(log: BaseballLogDraft): Result<Unit> = Result.success(Unit)
+        override fun observeLog(logId: String): Flow<BaseballLogEntry?> =
+            MutableStateFlow(logs.value.firstOrNull { it.id == logId })
+
+        override suspend fun createLog(log: BaseballLogDraft): Result<Unit> = Result.success(Unit)
+
+        override suspend fun updateLog(
+            logId: String,
+            log: BaseballLogDraft
+        ): Result<Unit> = Result.success(Unit)
+
+        override suspend fun deleteLog(logId: String): Result<Unit> {
+            deletedLogId = logId
+            return deleteResult
+        }
     }
 
     private fun logEntry(

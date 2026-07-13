@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -37,6 +38,7 @@ import java.time.LocalDate
 fun LogbookRoute(
     onBackClick: () -> Unit,
     onAddLogClick: () -> Unit,
+    onEditLogClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: LogbookViewModel = hiltViewModel()
 ) {
@@ -60,7 +62,11 @@ fun LogbookRoute(
             innerPadding = innerPadding,
             uiState = uiState,
             onYearSelected = viewModel::onYearSelected,
-            onAddLogClick = onAddLogClick
+            onAddLogClick = onAddLogClick,
+            onEditLogClick = onEditLogClick,
+            onDeleteLogClick = viewModel::onDeleteClick,
+            onDeleteDismissed = viewModel::onDeleteDismissed,
+            onDeleteConfirmed = viewModel::confirmDelete
         )
     }
 }
@@ -70,7 +76,11 @@ internal fun LogbookScreen(
     innerPadding: PaddingValues,
     uiState: LogbookUiState,
     onYearSelected: (Int?) -> Unit,
-    onAddLogClick: () -> Unit
+    onAddLogClick: () -> Unit,
+    onEditLogClick: (String) -> Unit,
+    onDeleteLogClick: (BaseballLogEntry) -> Unit,
+    onDeleteDismissed: () -> Unit,
+    onDeleteConfirmed: () -> Unit
 ) {
     if (uiState.isLoading) {
         Column(
@@ -218,10 +228,76 @@ internal fun LogbookScreen(
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            OutlinedButton(
+                                onClick = { onEditLogClick(log.id) },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(text = stringResource(id = R.string.logbook_edit_action))
+                            }
+                            OutlinedButton(
+                                onClick = { onDeleteLogClick(log) },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(text = stringResource(id = R.string.logbook_delete_action))
+                            }
+                        }
                     }
                 }
             }
         }
+    }
+
+    uiState.pendingDeleteLog?.let { log ->
+        AlertDialog(
+            onDismissRequest = onDeleteDismissed,
+            title = {
+                Text(text = stringResource(id = R.string.logbook_delete_title))
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = stringResource(
+                            id = R.string.logbook_delete_body,
+                            log.attendedDate.toString()
+                        )
+                    )
+                    uiState.deleteErrorMessage?.let { message ->
+                        Text(
+                            text = message,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = onDeleteConfirmed,
+                    enabled = !uiState.isDeleting
+                ) {
+                    if (uiState.isDeleting) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(text = stringResource(id = R.string.logbook_delete_confirm))
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = onDeleteDismissed,
+                    enabled = !uiState.isDeleting
+                ) {
+                    Text(text = stringResource(id = android.R.string.cancel))
+                }
+            }
+        )
     }
 }
 
@@ -249,7 +325,11 @@ private fun LogbookScreenPreview() {
                 )
             ),
             onYearSelected = {},
-            onAddLogClick = {}
+            onAddLogClick = {},
+            onEditLogClick = {},
+            onDeleteLogClick = {},
+            onDeleteDismissed = {},
+            onDeleteConfirmed = {}
         )
     }
 }

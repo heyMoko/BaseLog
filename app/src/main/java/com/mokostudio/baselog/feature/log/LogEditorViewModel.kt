@@ -1,6 +1,7 @@
 package com.mokostudio.baselog.feature.log
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.mokostudio.baselog.core.user.BaseballTeam
 import com.mokostudio.baselog.core.user.UserProfileRepository
@@ -20,10 +21,14 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class LogEditorViewModel @Inject constructor(
     private val baseballLogRepository: BaseballLogRepository,
-    private val userProfileRepository: UserProfileRepository
+    private val userProfileRepository: UserProfileRepository,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+    private val logId: String? = savedStateHandle[LOG_ID_NAV_ARG]
+
     private val _uiState = MutableStateFlow(
         LogEditorUiState(
+            mode = if (logId == null) LogEditorMode.Create else LogEditorMode.Edit,
             attendedDate = LocalDate.now()
         )
     )
@@ -35,12 +40,26 @@ class LogEditorViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val profile = userProfileRepository.observeCurrentUserProfile().first()
+            val existingLog = logId?.let { baseballLogRepository.observeLog(it).first() }
             _uiState.update { state ->
                 state.copy(
                     favoriteTeam = profile?.favoriteTeam,
-                    opponentTeam = state.opponentTeam?.takeUnless { it == profile?.favoriteTeam },
+                    attendedDate = existingLog?.attendedDate ?: state.attendedDate,
+                    opponentTeam = existingLog?.opponentTeam
+                        ?.takeUnless { it == profile?.favoriteTeam }
+                        ?: state.opponentTeam?.takeUnless { it == profile?.favoriteTeam },
+                    result = existingLog?.result ?: state.result,
                     isLoading = false
                 )
+            }
+
+            if (logId != null && existingLog == null) {
+                _uiState.update {
+                    it.copy(
+                        errorMessage = LOG_EDITOR_ERROR_NOT_FOUND,
+                        isMissingLog = true
+                    )
+                }
             }
         }
     }
@@ -80,9 +99,21 @@ class LogEditorViewModel @Inject constructor(
         val opponentTeam = state.opponentTeam
         val result = state.result
 
+        if (state.isMissingLog) {
+            return
+        }
+
         when {
             opponentTeam == null -> {
-                _uiState.update { it.copy(errorMessage = LOG_EDITOR_ERROR_OPPONENT) }
+                _uiState.update {
+                    it.copy(
+                        errorMessage = if (state.errorMessage == LOG_EDITOR_ERROR_SAME_TEAM) {
+                            LOG_EDITOR_ERROR_SAME_TEAM
+                        } else {
+                            LOG_EDITOR_ERROR_OPPONENT
+                        }
+                    )
+                }
                 return
             }
 
@@ -105,13 +136,18 @@ class LogEditorViewModel @Inject constructor(
                 )
             }
 
-            baseballLogRepository.saveLog(
-                BaseballLogDraft(
-                    attendedDate = state.attendedDate,
-                    opponentTeam = opponentTeam,
-                    result = result
-                )
-            ).onSuccess {
+            val draft = BaseballLogDraft(
+                attendedDate = state.attendedDate,
+                opponentTeam = opponentTeam,
+                result = result
+            )
+            val saveResult = if (logId == null) {
+                baseballLogRepository.createLog(draft)
+            } else {
+                baseballLogRepository.updateLog(logId = logId, log = draft)
+            }
+
+            saveResult.onSuccess {
                 _uiState.update { it.copy(isSaving = false) }
                 _events.emit(LogEditorEvent.Saved)
             }.onFailure { throwable ->
@@ -124,26 +160,72 @@ class LogEditorViewModel @Inject constructor(
             }
         }
     }
+
+    fun deleteLog() {
+        val currentLogId = logId ?: return
+        val state = _uiState.value
+        if (state.isMissingLog) {
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    isDeleting = true,
+                    errorMessage = null
+                )
+            }
+
+            baseballLogRepository.deleteLog(currentLogId)
+                .onSuccess {
+                    _uiState.update { it.copy(isDeleting = false) }
+                    _events.emit(LogEditorEvent.Deleted)
+                }
+                .onFailure { throwable ->
+                    _uiState.update {
+                        it.copy(
+                            isDeleting = false,
+                            errorMessage = throwable.message ?: LOG_EDITOR_ERROR_DELETE_UNKNOWN
+                        )
+                    }
+                }
+        }
+    }
 }
 
 data class LogEditorUiState(
+    val mode: LogEditorMode,
     val attendedDate: LocalDate,
     val favoriteTeam: BaseballTeam? = null,
     val opponentTeam: BaseballTeam? = null,
     val result: BaseballGameResult? = null,
     val isLoading: Boolean = true,
     val isSaving: Boolean = false,
+    val isDeleting: Boolean = false,
+    val isMissingLog: Boolean = false,
     val errorMessage: String? = null
 ) {
     val isSubmitEnabled: Boolean
-        get() = !isLoading && !isSaving && opponentTeam != null && result != null
+        get() = !isLoading && !isSaving && !isDeleting && !isMissingLog &&
+            opponentTeam != null && result != null
+
+    val isDeleteEnabled: Boolean
+        get() = mode == LogEditorMode.Edit && !isLoading && !isSaving && !isDeleting && !isMissingLog
 }
 
 sealed interface LogEditorEvent {
     data object Saved : LogEditorEvent
+    data object Deleted : LogEditorEvent
+}
+
+enum class LogEditorMode {
+    Create,
+    Edit
 }
 
 private const val LOG_EDITOR_ERROR_OPPONENT = "Choose the opposing team before saving this game."
 private const val LOG_EDITOR_ERROR_SAME_TEAM = "Your team cannot be selected as the opposing team."
 private const val LOG_EDITOR_ERROR_RESULT = "Select a result before saving this game."
 private const val LOG_EDITOR_ERROR_UNKNOWN = "We couldn't save this game log. Try again."
+private const val LOG_EDITOR_ERROR_DELETE_UNKNOWN = "We couldn't delete this game log. Try again."
+private const val LOG_EDITOR_ERROR_NOT_FOUND = "We couldn't find this game log. Return to the list and try again."

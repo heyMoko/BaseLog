@@ -12,6 +12,7 @@ class BaseLogNavHostRoutingTest {
 
         assertTrue(BaseLogDestination.Home.route in allowedRoutes)
         assertTrue(BaseLogDestination.EditProfile.route in allowedRoutes)
+        assertTrue(BaseLogDestination.EditLog.route in allowedRoutes)
     }
 
     @Test

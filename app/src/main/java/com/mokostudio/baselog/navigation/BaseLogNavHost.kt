@@ -4,16 +4,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import androidx.navigation.compose.rememberNavController
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mokostudio.baselog.core.startup.StartupDestination
 import com.mokostudio.baselog.feature.auth.login.LoginRoute
 import com.mokostudio.baselog.feature.home.HomeRoute
+import com.mokostudio.baselog.feature.log.LOG_ID_NAV_ARG
 import com.mokostudio.baselog.feature.log.LogEditorRoute
 import com.mokostudio.baselog.feature.log.LogbookRoute
 import com.mokostudio.baselog.feature.onboarding.OnboardingMode
@@ -116,6 +119,9 @@ fun BaseLogNavHost(
                 onBackClick = navController::popBackStack,
                 onAddLogClick = {
                     navController.navigate(BaseLogDestination.CreateLog.route)
+                },
+                onEditLogClick = { logId ->
+                    navController.navigate(BaseLogDestination.EditLog.createRoute(logId))
                 }
             )
         }
@@ -126,6 +132,33 @@ fun BaseLogNavHost(
                 onSaved = {
                     navController.navigate(BaseLogDestination.Logbook.route) {
                         popUpTo(BaseLogDestination.CreateLog.route) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                },
+                onDeleted = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(
+            route = BaseLogDestination.EditLog.route,
+            arguments = listOf(
+                navArgument(LOG_ID_NAV_ARG) {
+                    type = NavType.StringType
+                }
+            )
+        ) {
+            LogEditorRoute(
+                onBackClick = navController::popBackStack,
+                onSaved = {
+                    navController.popBackStack()
+                },
+                onDeleted = {
+                    navController.navigate(BaseLogDestination.Logbook.route) {
+                        popUpTo(BaseLogDestination.EditLog.route) {
                             inclusive = true
                         }
                         launchSingleTop = true
@@ -149,6 +182,7 @@ internal fun StartupDestination.allowedRoutes(): Set<String> = when (this) {
         BaseLogDestination.Home.route,
         BaseLogDestination.EditProfile.route,
         BaseLogDestination.Logbook.route,
-        BaseLogDestination.CreateLog.route
+        BaseLogDestination.CreateLog.route,
+        BaseLogDestination.EditLog.route
     )
 }

@@ -1,5 +1,7 @@
 package com.mokostudio.baselog.navigation
 
+import com.mokostudio.baselog.feature.log.LOG_ID_NAV_ARG
+
 sealed interface BaseLogDestination {
     val route: String
 
@@ -29,5 +31,11 @@ sealed interface BaseLogDestination {
 
     data object CreateLog : BaseLogDestination {
         override val route = "log/create"
+    }
+
+    data object EditLog : BaseLogDestination {
+        override val route = "log/edit/{$LOG_ID_NAV_ARG}"
+
+        fun createRoute(logId: String): String = "log/edit/$logId"
     }
 }

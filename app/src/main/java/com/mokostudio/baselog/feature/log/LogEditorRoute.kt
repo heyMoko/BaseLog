@@ -12,11 +12,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -44,6 +44,7 @@ import java.time.ZoneId
 fun LogEditorRoute(
     onBackClick: () -> Unit,
     onSaved: () -> Unit,
+    onDeleted: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: LogEditorViewModel = hiltViewModel()
 ) {
@@ -51,8 +52,9 @@ fun LogEditorRoute(
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
-            if (event == LogEditorEvent.Saved) {
-                onSaved()
+            when (event) {
+                LogEditorEvent.Saved -> onSaved()
+                LogEditorEvent.Deleted -> onDeleted()
             }
         }
     }
@@ -61,7 +63,10 @@ fun LogEditorRoute(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            LogEditorTopAppBar(onBackClick = onBackClick)
+            LogEditorTopAppBar(
+                onBackClick = onBackClick,
+                mode = uiState.mode
+            )
         }
     ) { innerPadding ->
         LogEditorScreen(
@@ -70,7 +75,8 @@ fun LogEditorRoute(
             onDateSelected = viewModel::onDateSelected,
             onOpponentTeamSelected = viewModel::onOpponentTeamSelected,
             onResultSelected = viewModel::onResultSelected,
-            onSaveClick = viewModel::saveLog
+            onSaveClick = viewModel::saveLog,
+            onDeleteClick = viewModel::deleteLog
         )
     }
 }
@@ -78,11 +84,20 @@ fun LogEditorRoute(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun LogEditorTopAppBar(
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    mode: LogEditorMode
 ) {
     TopAppBar(
         title = {
-            Text(text = stringResource(id = R.string.log_editor_title))
+            Text(
+                text = stringResource(
+                    id = if (mode == LogEditorMode.Create) {
+                        R.string.log_editor_title_create
+                    } else {
+                        R.string.log_editor_title_edit
+                    }
+                )
+            )
         },
         navigationIcon = {
             TextButton(onClick = onBackClick) {
@@ -100,7 +115,8 @@ internal fun LogEditorScreen(
     onDateSelected: (LocalDate) -> Unit,
     onOpponentTeamSelected: (BaseballTeam) -> Unit,
     onResultSelected: (BaseballGameResult) -> Unit,
-    onSaveClick: () -> Unit
+    onSaveClick: () -> Unit,
+    onDeleteClick: () -> Unit
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
 
@@ -113,12 +129,24 @@ internal fun LogEditorScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = stringResource(id = R.string.log_editor_heading),
+            text = stringResource(
+                id = if (uiState.mode == LogEditorMode.Create) {
+                    R.string.log_editor_heading_create
+                } else {
+                    R.string.log_editor_heading_edit
+                }
+            ),
             style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.onBackground
         )
         Text(
-            text = stringResource(id = R.string.log_editor_body),
+            text = stringResource(
+                id = if (uiState.mode == LogEditorMode.Create) {
+                    R.string.log_editor_body_create
+                } else {
+                    R.string.log_editor_body_edit
+                }
+            ),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -226,7 +254,32 @@ internal fun LogEditorScreen(
                     strokeWidth = 2.dp
                 )
             } else {
-                Text(text = stringResource(id = R.string.log_editor_save))
+                Text(
+                    text = stringResource(
+                        id = if (uiState.mode == LogEditorMode.Create) {
+                            R.string.log_editor_save_create
+                        } else {
+                            R.string.log_editor_save_edit
+                        }
+                    )
+                )
+            }
+        }
+
+        if (uiState.mode == LogEditorMode.Edit) {
+            OutlinedButton(
+                onClick = onDeleteClick,
+                modifier = Modifier.fillMaxWidth(),
+                enabled = uiState.isDeleteEnabled
+            ) {
+                if (uiState.isDeleting) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(text = stringResource(id = R.string.log_editor_delete))
+                }
             }
         }
     }
@@ -277,6 +330,7 @@ private fun LogEditorScreenPreview() {
         LogEditorScreen(
             innerPadding = PaddingValues(),
             uiState = LogEditorUiState(
+                mode = LogEditorMode.Create,
                 attendedDate = LocalDate.parse("2026-07-12"),
                 favoriteTeam = BaseballTeam.LgTwins,
                 opponentTeam = BaseballTeam.DoosanBears,
@@ -286,7 +340,8 @@ private fun LogEditorScreenPreview() {
             onDateSelected = {},
             onOpponentTeamSelected = {},
             onResultSelected = {},
-            onSaveClick = {}
+            onSaveClick = {},
+            onDeleteClick = {}
         )
     }
 }
