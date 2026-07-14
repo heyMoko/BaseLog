@@ -30,6 +30,7 @@ import com.mokostudio.baselog.ui.theme.BaseLogTheme
 @Composable
 fun HomeRoute(
     onEditProfileClick: () -> Unit,
+    onViewFriendsClick: () -> Unit,
     onViewLogsClick: () -> Unit,
     onAddLogClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -45,6 +46,7 @@ fun HomeRoute(
             modifier = Modifier.padding(innerPadding),
             uiState = uiState,
             onEditProfileClick = onEditProfileClick,
+            onViewFriendsClick = onViewFriendsClick,
             onViewLogsClick = onViewLogsClick,
             onAddLogClick = onAddLogClick,
             onSignOutClick = viewModel::signOut
@@ -56,6 +58,7 @@ fun HomeRoute(
 internal fun HomeScreen(
     uiState: HomeUiState,
     onEditProfileClick: () -> Unit,
+    onViewFriendsClick: () -> Unit,
     onViewLogsClick: () -> Unit,
     onAddLogClick: () -> Unit,
     onSignOutClick: () -> Unit,
@@ -138,6 +141,9 @@ internal fun HomeScreen(
                         )
                         OutlinedButton(onClick = onEditProfileClick) {
                             Text(text = stringResource(id = R.string.profile_edit_action))
+                        }
+                        OutlinedButton(onClick = onViewFriendsClick) {
+                            Text(text = stringResource(id = R.string.home_view_friends))
                         }
                     }
                 }
@@ -351,6 +357,7 @@ private fun HomeScreenPreview() {
                 )
             ),
             onEditProfileClick = {},
+            onViewFriendsClick = {},
             onViewLogsClick = {},
             onAddLogClick = {},
             onSignOutClick = {}
@@ -367,6 +374,7 @@ private fun HomeScreenUnavailablePreview() {
                 isProfileUnavailable = true
             ),
             onEditProfileClick = {},
+            onViewFriendsClick = {},
             onViewLogsClick = {},
             onAddLogClick = {},
             onSignOutClick = {}

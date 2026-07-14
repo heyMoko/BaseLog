@@ -68,23 +68,39 @@ class FirebaseUserProfileRepository @Inject constructor(
         )
 
         val document = db.collection(USERS_COLLECTION).document(user.uid)
+        val publicProfileDocument = db.collection(PUBLIC_PROFILES_COLLECTION).document(user.uid)
         val existingSnapshot = document.awaitGet()
         val preservedPhotoUrl = existingSnapshot.getString(FIELD_PHOTO_URL).orEmpty().trim()
+        val photoUrl = user.photoUrl?.toString().orEmpty().ifBlank { preservedPhotoUrl }
         val profileData = hashMapOf<String, Any>(
             FIELD_NICKNAME to profile.nickname.trim(),
             FIELD_FAVORITE_TEAM_ID to profile.favoriteTeam.id,
             FIELD_FAVORITE_TEAM_NAME to profile.favoriteTeam.displayName,
             FIELD_BIO to profile.bio.trim(),
             FIELD_EMAIL to user.email.orEmpty(),
-            FIELD_PHOTO_URL to user.photoUrl?.toString().orEmpty().ifBlank { preservedPhotoUrl },
+            FIELD_PHOTO_URL to photoUrl,
+            FIELD_UPDATED_AT to FieldValue.serverTimestamp()
+        )
+        val publicProfileData = hashMapOf<String, Any>(
+            FIELD_NICKNAME to profile.nickname.trim(),
+            FIELD_FAVORITE_TEAM_ID to profile.favoriteTeam.id,
+            FIELD_FAVORITE_TEAM_NAME to profile.favoriteTeam.displayName,
+            FIELD_BIO to profile.bio.trim(),
+            FIELD_PHOTO_URL to photoUrl,
             FIELD_UPDATED_AT to FieldValue.serverTimestamp()
         )
 
         if (!existingSnapshot.exists()) {
             profileData[FIELD_CREATED_AT] = FieldValue.serverTimestamp()
+            publicProfileData[FIELD_CREATED_AT] = FieldValue.serverTimestamp()
         }
 
-        return document.awaitSet(profileData, SetOptions.merge())
+        return db.batch()
+            .apply {
+                set(document, profileData, SetOptions.merge())
+                set(publicProfileDocument, publicProfileData, SetOptions.merge())
+            }
+            .awaitCommit()
     }
 }
 
@@ -190,7 +206,23 @@ private suspend fun DocumentReference.awaitSet(
         }
 }
 
+private suspend fun com.google.firebase.firestore.WriteBatch.awaitCommit(): Result<Unit> =
+    suspendCancellableCoroutine { continuation ->
+        commit()
+            .addOnSuccessListener {
+                if (continuation.isActive) {
+                    continuation.resume(Result.success(Unit))
+                }
+            }
+            .addOnFailureListener { error ->
+                if (continuation.isActive) {
+                    continuation.resume(Result.failure(error))
+                }
+            }
+    }
+
 private const val USERS_COLLECTION = "users"
+private const val PUBLIC_PROFILES_COLLECTION = "publicProfiles"
 private const val FIELD_NICKNAME = "nickname"
 private const val FIELD_FAVORITE_TEAM_ID = "favoriteTeamId"
 private const val FIELD_FAVORITE_TEAM_NAME = "favoriteTeamName"

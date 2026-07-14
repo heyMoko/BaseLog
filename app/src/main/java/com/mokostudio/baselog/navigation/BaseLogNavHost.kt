@@ -15,6 +15,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mokostudio.baselog.core.startup.StartupDestination
 import com.mokostudio.baselog.feature.auth.login.LoginRoute
+import com.mokostudio.baselog.feature.friends.FriendsRoute
 import com.mokostudio.baselog.feature.home.HomeRoute
 import com.mokostudio.baselog.feature.log.LOG_ID_NAV_ARG
 import com.mokostudio.baselog.feature.log.LogEditorRoute
@@ -105,6 +106,9 @@ fun BaseLogNavHost(
                 onEditProfileClick = {
                     navController.navigate(BaseLogDestination.EditProfile.route)
                 },
+                onViewFriendsClick = {
+                    navController.navigate(BaseLogDestination.Friends.route)
+                },
                 onViewLogsClick = {
                     navController.navigate(BaseLogDestination.Logbook.route)
                 },
@@ -124,6 +128,10 @@ fun BaseLogNavHost(
                     navController.navigate(BaseLogDestination.EditLog.createRoute(logId))
                 }
             )
+        }
+
+        composable(BaseLogDestination.Friends.route) {
+            FriendsRoute(onBackClick = navController::popBackStack)
         }
 
         composable(BaseLogDestination.CreateLog.route) {
@@ -180,6 +188,7 @@ internal fun StartupDestination.allowedRoutes(): Set<String> = when (this) {
     StartupDestination.Onboarding -> setOf(BaseLogDestination.Onboarding.route)
     StartupDestination.Home -> setOf(
         BaseLogDestination.Home.route,
+        BaseLogDestination.Friends.route,
         BaseLogDestination.EditProfile.route,
         BaseLogDestination.Logbook.route,
         BaseLogDestination.CreateLog.route,

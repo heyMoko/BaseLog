@@ -16,6 +16,7 @@
     <string name="home_bio_empty">Add a short intro so other fans know what kind of ballpark visitor you are.</string>
     <string name="home_next_title">Profile ready for game day</string>
     <string name="home_next_body">Your account is ready. Next we can connect baseball log creation, win-rate history, and friend comparisons on top of this profile.</string>
+    <string name="home_view_friends">Friends</string>
     <string name="home_dashboard_title">Your game-day dashboard</string>
     <string name="home_dashboard_overall">Overall win rate</string>
     <string name="home_dashboard_year">%1$d season win rate</string>
@@ -79,4 +80,23 @@
     <string name="profile_edit_submit">Save changes</string>
     <string name="profile_edit_action">Edit profile</string>
     <string name="profile_edit_back">Back</string>
+    <string name="friends_title">Friends</string>
+    <string name="friends_search_label">Find baseball friends</string>
+    <string name="friends_search_placeholder">Search by nickname</string>
+    <string name="friends_search_action">Search</string>
+    <string name="friends_search_empty">No matching users found.</string>
+    <string name="friends_search_idle">Search by nickname to send a friend request.</string>
+    <string name="friends_send_request">Send request</string>
+    <string name="friends_request_sent">Pending</string>
+    <string name="friends_already_friends">Friends</string>
+    <string name="friends_incoming_title">Incoming requests</string>
+    <string name="friends_incoming_empty">No pending friend requests right now.</string>
+    <string name="friends_accept">Accept</string>
+    <string name="friends_reject">Reject</string>
+    <string name="friends_list_title">Your friends</string>
+    <string name="friends_list_empty">You do not have any mutual friends yet.</string>
+    <string name="friends_remove">Remove friend</string>
+    <string name="friends_remove_confirm_title">Remove this friend?</string>
+    <string name="friends_remove_confirm_body">%1$s will no longer appear in your friend list or future leaderboards.</string>
+    <string name="friends_remove_confirm_action">Remove</string>
 </resources>
