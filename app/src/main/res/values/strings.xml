@@ -27,6 +27,12 @@
     <string name="home_recent_logs_title">Recent game logs</string>
     <string name="home_recent_logs_empty">Your recent baseball logs will appear here after you save a game day.</string>
     <string name="home_recent_logs_opponent">vs %1$s</string>
+    <string name="home_friends_leaderboard_title">Friend leaderboard</string>
+    <string name="home_friends_leaderboard_empty">Mutual friends with baseball logs will appear here.</string>
+    <string name="home_friends_leaderboard_rank">#%1$d %2$s</string>
+    <string name="home_friends_leaderboard_me">#%1$d %2$s (You)</string>
+    <string name="home_friends_leaderboard_record">%1$s • %2$s</string>
+    <string name="home_friends_leaderboard_my_rank">Your current rank: #%1$d</string>
     <string name="home_log_title">Start your baseball log</string>
     <string name="home_log_body">Save game days, track your record, and check your win rate by season.</string>
     <string name="home_view_logs">View logs</string>
@@ -95,6 +101,13 @@
     <string name="friends_reject">Reject</string>
     <string name="friends_list_title">Your friends</string>
     <string name="friends_list_empty">You do not have any mutual friends yet.</string>
+    <string name="friends_leaderboard_title">Friend leaderboard</string>
+    <string name="friends_leaderboard_body">Compare your game-day record with mutual friends.</string>
+    <string name="friends_leaderboard_empty">Add mutual friends and shared game logs to build the leaderboard.</string>
+    <string name="friends_leaderboard_me">%1$s (You)</string>
+    <string name="friends_leaderboard_metric_win_rate">Win rate</string>
+    <string name="friends_leaderboard_metric_total_games">Games</string>
+    <string name="friends_leaderboard_metric_wins">Wins</string>
     <string name="friends_view_profile">View profile</string>
     <string name="friends_remove">Remove friend</string>
     <string name="friends_remove_confirm_title">Remove this friend?</string>

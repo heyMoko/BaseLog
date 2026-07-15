@@ -244,6 +244,86 @@ internal fun HomeScreen(
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Column(
                         modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.home_friends_leaderboard_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        uiState.friendLeaderboardPreview.errorMessage?.let { message ->
+                            Text(
+                                text = message,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+
+                        if (!uiState.friendLeaderboardPreview.hasEntries) {
+                            Text(
+                                text = stringResource(id = R.string.home_friends_leaderboard_empty),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        } else {
+                            uiState.friendLeaderboardPreview.topEntries.forEach { entry ->
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text(
+                                        text = if (entry.isCurrentUser) {
+                                            stringResource(
+                                                id = R.string.home_friends_leaderboard_me,
+                                                entry.rank,
+                                                entry.nickname
+                                            )
+                                        } else {
+                                            stringResource(
+                                                id = R.string.home_friends_leaderboard_rank,
+                                                entry.rank,
+                                                entry.nickname
+                                            )
+                                        },
+                                        style = MaterialTheme.typography.titleSmall,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = entry.favoriteTeamName,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    Text(
+                                        text = stringResource(
+                                            id = R.string.home_friends_leaderboard_record,
+                                            entry.winRatePercent?.let { "$it%" } ?: "-",
+                                            entry.record
+                                        ),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+
+                            uiState.friendLeaderboardPreview.myRank?.let { rank ->
+                                Text(
+                                    text = stringResource(
+                                        id = R.string.home_friends_leaderboard_my_rank,
+                                        rank
+                                    ),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+
+                        OutlinedButton(onClick = onViewFriendsClick) {
+                            Text(text = stringResource(id = R.string.home_view_friends))
+                        }
+                    }
+                }
+
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
@@ -354,6 +434,27 @@ private fun HomeScreenPreview() {
                         )
                     ),
                     hasLogs = true
+                ),
+                friendLeaderboardPreview = HomeFriendLeaderboardPreview(
+                    topEntries = listOf(
+                        HomeFriendLeaderboardEntry(
+                            rank = 1,
+                            nickname = "Moko",
+                            favoriteTeamName = "LG Twins",
+                            winRatePercent = 75,
+                            record = "6W 2L 0D",
+                            isCurrentUser = true
+                        ),
+                        HomeFriendLeaderboardEntry(
+                            rank = 2,
+                            nickname = "Jin",
+                            favoriteTeamName = "Doosan Bears",
+                            winRatePercent = 66,
+                            record = "4W 2L 1D",
+                            isCurrentUser = false
+                        )
+                    ),
+                    myRank = 1
                 )
             ),
             onEditProfileClick = {},

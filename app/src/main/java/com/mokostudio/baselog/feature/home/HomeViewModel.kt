@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mokostudio.baselog.core.auth.AuthRepository
 import com.mokostudio.baselog.core.user.UserProfileRepository
+import com.mokostudio.baselog.feature.friends.FriendLeaderboardLoadState
+import com.mokostudio.baselog.feature.friends.FriendLeaderboardRepository
 import com.mokostudio.baselog.feature.log.BaseballGameResult
 import com.mokostudio.baselog.feature.log.BaseballLogRepository
 import com.mokostudio.baselog.feature.log.WinRateCalculator
@@ -20,13 +22,15 @@ import kotlinx.coroutines.launch
 class HomeViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     userProfileRepository: UserProfileRepository,
-    baseballLogRepository: BaseballLogRepository
+    baseballLogRepository: BaseballLogRepository,
+    friendLeaderboardRepository: FriendLeaderboardRepository
 ) : ViewModel() {
     val uiState: StateFlow<HomeUiState> =
         combine(
             userProfileRepository.observeCurrentUserProfile(),
-            baseballLogRepository.observeLogs()
-        ) { profile, logs ->
+            baseballLogRepository.observeLogs(),
+            friendLeaderboardRepository.observeLeaderboard()
+        ) { profile, logs, leaderboard ->
             if (profile == null) {
                 HomeUiState(
                     isLoading = false,
@@ -62,7 +66,8 @@ class HomeViewModel @Inject constructor(
                                 resultLabel = log.result.toLabel()
                             )
                         }
-                    )
+                    ),
+                    friendLeaderboardPreview = leaderboard.toHomePreview()
                 )
             }
         }.stateIn(
@@ -82,6 +87,7 @@ data class HomeUiState(
     val isLoading: Boolean = false,
     val profile: HomeProfileSummary? = null,
     val logSummary: HomeLogSummary = HomeLogSummary(),
+    val friendLeaderboardPreview: HomeFriendLeaderboardPreview = HomeFriendLeaderboardPreview(),
     val isProfileUnavailable: Boolean = false
 )
 
@@ -104,11 +110,78 @@ data class HomeLogSummary(
     val hasLogs: Boolean = false
 )
 
+data class HomeFriendLeaderboardPreview(
+    val topEntries: List<HomeFriendLeaderboardEntry> = emptyList(),
+    val myRank: Int? = null,
+    val errorMessage: String? = null
+) {
+    val hasEntries: Boolean
+        get() = topEntries.isNotEmpty()
+}
+
+data class HomeFriendLeaderboardEntry(
+    val rank: Int,
+    val nickname: String,
+    val favoriteTeamName: String,
+    val winRatePercent: Int?,
+    val record: String,
+    val isCurrentUser: Boolean
+)
+
 data class HomeRecentLog(
     val id: String,
     val attendedDate: String,
     val opponentTeamName: String,
     val resultLabel: String
+)
+
+private fun FriendLeaderboardLoadState.toHomePreview(): HomeFriendLeaderboardPreview {
+    val rankedEntries = entries
+        .map { entry ->
+            RankedHomeFriendEntry(
+                nickname = entry.nickname,
+                favoriteTeamName = entry.favoriteTeam.displayName,
+                winRatePercent = entry.summary.winRatePercent,
+                record = "${entry.summary.wins}W ${entry.summary.losses}L ${entry.summary.draws}D",
+                isCurrentUser = entry.isCurrentUser,
+                primaryValue = entry.summary.winRate ?: -1.0,
+                secondaryValue = entry.summary.totalGames,
+                tertiaryValue = entry.summary.wins
+            )
+        }
+        .sortedWith(
+            compareByDescending<RankedHomeFriendEntry> { it.primaryValue }
+                .thenByDescending { it.secondaryValue }
+                .thenByDescending { it.tertiaryValue }
+                .thenBy { it.nickname.lowercase() }
+        )
+        .mapIndexed { index, entry ->
+            HomeFriendLeaderboardEntry(
+                rank = index + 1,
+                nickname = entry.nickname,
+                favoriteTeamName = entry.favoriteTeamName,
+                winRatePercent = entry.winRatePercent,
+                record = entry.record,
+                isCurrentUser = entry.isCurrentUser
+            )
+        }
+
+    return HomeFriendLeaderboardPreview(
+        topEntries = rankedEntries.take(3),
+        myRank = rankedEntries.firstOrNull { it.isCurrentUser }?.rank,
+        errorMessage = errorMessage
+    )
+}
+
+private data class RankedHomeFriendEntry(
+    val nickname: String,
+    val favoriteTeamName: String,
+    val winRatePercent: Int?,
+    val record: String,
+    val isCurrentUser: Boolean,
+    val primaryValue: Double,
+    val secondaryValue: Int,
+    val tertiaryValue: Int
 )
 
 private fun com.mokostudio.baselog.feature.log.WinRateSummary.toRecordText(): String? {

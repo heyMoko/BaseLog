@@ -28,7 +28,7 @@ class FriendsViewModelTest {
             friendSummary("pending-1", "PendingFan"),
             friendSummary("new-1", "NewFan")
         )
-        val viewModel = FriendsViewModel(repository)
+        val viewModel = FriendsViewModel(repository, FakeFriendLeaderboardRepository())
         val collectionJob = backgroundScope.launch {
             viewModel.uiState.collect {}
         }
@@ -46,7 +46,7 @@ class FriendsViewModelTest {
     @Test
     fun acceptRequest_callsRepository() = runTest {
         val repository = FakeFriendsRepository()
-        val viewModel = FriendsViewModel(repository)
+        val viewModel = FriendsViewModel(repository, FakeFriendLeaderboardRepository())
         val collectionJob = backgroundScope.launch {
             viewModel.uiState.collect {}
         }
@@ -61,7 +61,7 @@ class FriendsViewModelTest {
     @Test
     fun removeFriend_callsRepository() = runTest {
         val repository = FakeFriendsRepository()
-        val viewModel = FriendsViewModel(repository)
+        val viewModel = FriendsViewModel(repository, FakeFriendLeaderboardRepository())
         val collectionJob = backgroundScope.launch {
             viewModel.uiState.collect {}
         }
@@ -70,6 +70,55 @@ class FriendsViewModelTest {
         advanceUntilIdle()
 
         assertEquals("friend-1", repository.removedFriendId)
+        collectionJob.cancel()
+    }
+
+    @Test
+    fun leaderboard_sortsBySelectedMetricAndYear() = runTest {
+        val repository = FakeFriendsRepository()
+        val leaderboardRepository = FakeFriendLeaderboardRepository()
+        leaderboardRepository.state.value = FriendLeaderboardLoadState(
+            entries = listOf(
+                leaderboardEntry(
+                    userId = "me",
+                    nickname = "Moko",
+                    isCurrentUser = true,
+                    overallSummary = summary(totalGames = 8, wins = 6, losses = 2, draws = 0, winRatePercent = 75),
+                    yearlySummaries = mapOf(
+                        2026 to summary(totalGames = 3, wins = 1, losses = 2, draws = 0, winRatePercent = 33)
+                    )
+                ),
+                leaderboardEntry(
+                    userId = "friend-1",
+                    nickname = "Alpha",
+                    isCurrentUser = false,
+                    overallSummary = summary(totalGames = 12, wins = 7, losses = 3, draws = 2, winRatePercent = 70),
+                    yearlySummaries = mapOf(
+                        2026 to summary(totalGames = 5, wins = 4, losses = 1, draws = 0, winRatePercent = 80)
+                    )
+                )
+            ),
+            availableYears = listOf(2026)
+        )
+        val viewModel = FriendsViewModel(repository, leaderboardRepository)
+        val collectionJob = backgroundScope.launch {
+            viewModel.uiState.collect {}
+        }
+        advanceUntilIdle()
+
+        assertEquals("Moko", viewModel.uiState.value.leaderboard.entries.first().nickname)
+
+        viewModel.onLeaderboardMetricSelected(LeaderboardMetric.TotalGames)
+        advanceUntilIdle()
+
+        assertEquals("Alpha", viewModel.uiState.value.leaderboard.entries.first().nickname)
+
+        viewModel.onLeaderboardYearSelected(2026)
+        viewModel.onLeaderboardMetricSelected(LeaderboardMetric.WinRate)
+        advanceUntilIdle()
+
+        assertEquals("Alpha", viewModel.uiState.value.leaderboard.entries.first().nickname)
+        assertEquals("80%", viewModel.uiState.value.leaderboard.entries.first().value)
         collectionJob.cancel()
     }
 
@@ -106,6 +155,12 @@ class FriendsViewModelTest {
         }
     }
 
+    private class FakeFriendLeaderboardRepository : FriendLeaderboardRepository {
+        val state = MutableStateFlow(FriendLeaderboardLoadState())
+
+        override fun observeLeaderboard(): Flow<FriendLeaderboardLoadState> = state
+    }
+
     private fun friendSummary(userId: String, nickname: String): FriendSummary {
         return FriendSummary(
             userId = userId,
@@ -113,6 +168,39 @@ class FriendsViewModelTest {
             favoriteTeam = BaseballTeam.LgTwins,
             bio = "",
             photoUrl = ""
+        )
+    }
+
+    private fun leaderboardEntry(
+        userId: String,
+        nickname: String,
+        isCurrentUser: Boolean,
+        overallSummary: com.mokostudio.baselog.feature.log.WinRateSummary,
+        yearlySummaries: Map<Int, com.mokostudio.baselog.feature.log.WinRateSummary>
+    ): FriendLeaderboardEntry {
+        return FriendLeaderboardEntry(
+            userId = userId,
+            nickname = nickname,
+            favoriteTeam = BaseballTeam.LgTwins,
+            summary = overallSummary,
+            yearlySummaries = yearlySummaries,
+            isCurrentUser = isCurrentUser
+        )
+    }
+
+    private fun summary(
+        totalGames: Int,
+        wins: Int,
+        losses: Int,
+        draws: Int,
+        winRatePercent: Int
+    ): com.mokostudio.baselog.feature.log.WinRateSummary {
+        return com.mokostudio.baselog.feature.log.WinRateSummary(
+            totalGames = totalGames,
+            wins = wins,
+            losses = losses,
+            draws = draws,
+            winRatePercent = winRatePercent
         )
     }
 }

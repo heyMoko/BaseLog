@@ -19,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -72,6 +73,8 @@ fun FriendsRoute(
             onRejectClick = viewModel::rejectRequest,
             onRemoveFriendClick = viewModel::removeFriend,
             onFriendClick = onFriendClick,
+            onLeaderboardMetricSelected = viewModel::onLeaderboardMetricSelected,
+            onLeaderboardYearSelected = viewModel::onLeaderboardYearSelected,
             onErrorDismissed = viewModel::clearErrorMessage
         )
     }
@@ -88,6 +91,8 @@ internal fun FriendsScreen(
     onRejectClick: (String) -> Unit,
     onRemoveFriendClick: (String) -> Unit,
     onFriendClick: (String) -> Unit,
+    onLeaderboardMetricSelected: (LeaderboardMetric) -> Unit,
+    onLeaderboardYearSelected: (Int?) -> Unit,
     onErrorDismissed: () -> Unit
 ) {
     var pendingRemoveFriend by remember { mutableStateOf<FriendSummary?>(null) }
@@ -217,6 +222,18 @@ internal fun FriendsScreen(
                 }
             }
 
+            item {
+                SectionHeading(title = stringResource(id = R.string.friends_leaderboard_title))
+            }
+
+            item {
+                FriendLeaderboardCard(
+                    leaderboard = uiState.leaderboard,
+                    onMetricSelected = onLeaderboardMetricSelected,
+                    onYearSelected = onLeaderboardYearSelected
+                )
+            }
+
             uiState.errorMessage?.let { message ->
                 item {
                     Text(
@@ -267,6 +284,152 @@ internal fun FriendsScreen(
                 }
             }
         )
+    }
+}
+
+@Composable
+private fun FriendLeaderboardCard(
+    leaderboard: FriendLeaderboardUiState,
+    onMetricSelected: (LeaderboardMetric) -> Unit,
+    onYearSelected: (Int?) -> Unit
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = stringResource(id = R.string.friends_leaderboard_body),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                LeaderboardMetric.entries.forEach { metric ->
+                    FilterChipButton(
+                        label = metric.label(),
+                        isSelected = leaderboard.selectedMetric == metric,
+                        onClick = { onMetricSelected(metric) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FilterChipButton(
+                    label = stringResource(id = R.string.logbook_filter_all),
+                    isSelected = leaderboard.selectedYear == null,
+                    onClick = { onYearSelected(null) },
+                    modifier = Modifier.weight(1f)
+                )
+                leaderboard.availableYears.take(3).forEach { year ->
+                    FilterChipButton(
+                        label = year.toString(),
+                        isSelected = leaderboard.selectedYear == year,
+                        onClick = { onYearSelected(year) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+            leaderboard.errorMessage?.let { message ->
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+            if (leaderboard.entries.isEmpty()) {
+                Text(
+                    text = stringResource(id = R.string.friends_leaderboard_empty),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                leaderboard.entries.forEach { entry ->
+                    Surface(
+                        color = if (entry.isCurrentUser) {
+                            MaterialTheme.colorScheme.secondaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.surfaceVariant
+                        },
+                        shape = MaterialTheme.shapes.medium
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Text(
+                                text = "#${entry.rank}",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                verticalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                Text(
+                                    text = if (entry.isCurrentUser) {
+                                        stringResource(
+                                            id = R.string.friends_leaderboard_me,
+                                            entry.nickname
+                                        )
+                                    } else {
+                                        entry.nickname
+                                    },
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = entry.favoriteTeamName,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = entry.supporting,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Text(
+                                text = entry.value,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun FilterChipButton(
+    label: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    if (isSelected) {
+        Button(
+            onClick = onClick,
+            modifier = modifier
+        ) {
+            Text(text = label)
+        }
+    } else {
+        OutlinedButton(
+            onClick = onClick,
+            modifier = modifier
+        ) {
+            Text(text = label)
+        }
     }
 }
 
@@ -489,7 +652,16 @@ private fun FriendsScreenPreview() {
             onRejectClick = {},
             onRemoveFriendClick = {},
             onFriendClick = {},
+            onLeaderboardMetricSelected = {},
+            onLeaderboardYearSelected = {},
             onErrorDismissed = {}
         )
     }
+}
+
+@Composable
+private fun LeaderboardMetric.label(): String = when (this) {
+    LeaderboardMetric.WinRate -> stringResource(id = R.string.friends_leaderboard_metric_win_rate)
+    LeaderboardMetric.TotalGames -> stringResource(id = R.string.friends_leaderboard_metric_total_games)
+    LeaderboardMetric.Wins -> stringResource(id = R.string.friends_leaderboard_metric_wins)
 }

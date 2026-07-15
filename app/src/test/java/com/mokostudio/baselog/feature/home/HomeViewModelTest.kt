@@ -5,10 +5,14 @@ import com.mokostudio.baselog.core.user.BaseballTeam
 import com.mokostudio.baselog.core.user.UserProfile
 import com.mokostudio.baselog.core.user.UserProfileDraft
 import com.mokostudio.baselog.core.user.UserProfileRepository
+import com.mokostudio.baselog.feature.friends.FriendLeaderboardEntry
+import com.mokostudio.baselog.feature.friends.FriendLeaderboardLoadState
+import com.mokostudio.baselog.feature.friends.FriendLeaderboardRepository
 import com.mokostudio.baselog.feature.log.BaseballGameResult
 import com.mokostudio.baselog.feature.log.BaseballLogDraft
 import com.mokostudio.baselog.feature.log.BaseballLogEntry
 import com.mokostudio.baselog.feature.log.BaseballLogRepository
+import com.mokostudio.baselog.feature.log.WinRateSummary
 import com.mokostudio.baselog.testutil.MainDispatcherRule
 import java.time.LocalDate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -34,7 +38,8 @@ class HomeViewModelTest {
         val viewModel = HomeViewModel(
             authRepository = repository,
             userProfileRepository = FakeUserProfileRepository(),
-            baseballLogRepository = FakeBaseballLogRepository()
+            baseballLogRepository = FakeBaseballLogRepository(),
+            friendLeaderboardRepository = FakeFriendLeaderboardRepository()
         )
 
         viewModel.signOut()
@@ -49,7 +54,8 @@ class HomeViewModelTest {
         val viewModel = HomeViewModel(
             authRepository = FakeAuthRepository(),
             userProfileRepository = userProfileRepository,
-            baseballLogRepository = FakeBaseballLogRepository()
+            baseballLogRepository = FakeBaseballLogRepository(),
+            friendLeaderboardRepository = FakeFriendLeaderboardRepository()
         )
         val collectionJob: Job = backgroundScope.launch {
             viewModel.uiState.collect {}
@@ -76,7 +82,8 @@ class HomeViewModelTest {
         val viewModel = HomeViewModel(
             authRepository = FakeAuthRepository(),
             userProfileRepository = FakeUserProfileRepository(),
-            baseballLogRepository = FakeBaseballLogRepository()
+            baseballLogRepository = FakeBaseballLogRepository(),
+            friendLeaderboardRepository = FakeFriendLeaderboardRepository()
         )
         val collectionJob: Job = backgroundScope.launch {
             viewModel.uiState.collect {}
@@ -94,10 +101,12 @@ class HomeViewModelTest {
         val userProfileRepository = FakeUserProfileRepository()
         val baseballLogRepository = FakeBaseballLogRepository()
         val currentYear = LocalDate.now().year
+        val friendLeaderboardRepository = FakeFriendLeaderboardRepository()
         val viewModel = HomeViewModel(
             authRepository = FakeAuthRepository(),
             userProfileRepository = userProfileRepository,
-            baseballLogRepository = baseballLogRepository
+            baseballLogRepository = baseballLogRepository,
+            friendLeaderboardRepository = friendLeaderboardRepository
         )
         val collectionJob: Job = backgroundScope.launch {
             viewModel.uiState.collect {}
@@ -124,6 +133,67 @@ class HomeViewModelTest {
         assertEquals("1W 1L 1D", viewModel.uiState.value.logSummary.currentYearRecord)
         assertEquals(3, viewModel.uiState.value.logSummary.recentLogs.size)
         assertEquals("$currentYear-07-12", viewModel.uiState.value.logSummary.recentLogs.first().attendedDate)
+        collectionJob.cancel()
+    }
+
+    @Test
+    fun uiState_includesFriendLeaderboardPreview() = runTest {
+        val userProfileRepository = FakeUserProfileRepository()
+        val friendLeaderboardRepository = FakeFriendLeaderboardRepository()
+        val viewModel = HomeViewModel(
+            authRepository = FakeAuthRepository(),
+            userProfileRepository = userProfileRepository,
+            baseballLogRepository = FakeBaseballLogRepository(),
+            friendLeaderboardRepository = friendLeaderboardRepository
+        )
+        val collectionJob: Job = backgroundScope.launch {
+            viewModel.uiState.collect {}
+        }
+
+        userProfileRepository.profile.value = UserProfile(
+            nickname = "Moko",
+            favoriteTeam = BaseballTeam.LgTwins,
+            bio = "",
+            email = "moko@example.com",
+            photoUrl = ""
+        )
+        friendLeaderboardRepository.state.value = FriendLeaderboardLoadState(
+            entries = listOf(
+                FriendLeaderboardEntry(
+                    userId = "me",
+                    nickname = "Moko",
+                    favoriteTeam = BaseballTeam.LgTwins,
+                    summary = WinRateSummary(
+                        totalGames = 8,
+                        wins = 6,
+                        losses = 2,
+                        draws = 0,
+                        winRatePercent = 75
+                    ),
+                    yearlySummaries = emptyMap(),
+                    isCurrentUser = true
+                ),
+                FriendLeaderboardEntry(
+                    userId = "friend-1",
+                    nickname = "Jin",
+                    favoriteTeam = BaseballTeam.DoosanBears,
+                    summary = WinRateSummary(
+                        totalGames = 6,
+                        wins = 4,
+                        losses = 2,
+                        draws = 0,
+                        winRatePercent = 66
+                    ),
+                    yearlySummaries = emptyMap(),
+                    isCurrentUser = false
+                )
+            )
+        )
+        advanceUntilIdle()
+
+        assertEquals(2, viewModel.uiState.value.friendLeaderboardPreview.topEntries.size)
+        assertEquals(1, viewModel.uiState.value.friendLeaderboardPreview.myRank)
+        assertEquals("Moko", viewModel.uiState.value.friendLeaderboardPreview.topEntries.first().nickname)
         collectionJob.cancel()
     }
 
@@ -169,6 +239,12 @@ class HomeViewModelTest {
         ): Result<Unit> = Result.success(Unit)
 
         override suspend fun deleteLog(logId: String): Result<Unit> = Result.success(Unit)
+    }
+
+    private class FakeFriendLeaderboardRepository : FriendLeaderboardRepository {
+        val state = MutableStateFlow(FriendLeaderboardLoadState())
+
+        override fun observeLeaderboard(): Flow<FriendLeaderboardLoadState> = state
     }
 
     private fun logEntry(
