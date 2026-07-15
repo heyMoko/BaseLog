@@ -112,11 +112,6 @@ private fun MainNavHost(
                     navController.navigate(MainTab.Record.route) {
                         launchSingleTop = true
                     }
-                },
-                onViewRankingClick = {
-                    navController.navigate(MainTab.Ranking.route) {
-                        launchSingleTop = true
-                    }
                 }
             )
         }
