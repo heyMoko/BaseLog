@@ -6,6 +6,7 @@ import com.mokostudio.baselog.feature.log.BaseballLogRepository
 import com.mokostudio.baselog.feature.log.WinRateCalculator
 import com.mokostudio.baselog.feature.log.WinRateSummary
 import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -25,6 +26,7 @@ class DefaultFriendLeaderboardRepository @Inject constructor(
     private val userProfileRepository: UserProfileRepository,
     private val baseballLogRepository: BaseballLogRepository
 ) : FriendLeaderboardRepository {
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun observeLeaderboard(): Flow<FriendLeaderboardLoadState> {
         return combine(
             userProfileRepository.observeCurrentUserProfile(),

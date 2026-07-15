@@ -21,8 +21,22 @@ sealed interface BaseLogDestination {
         override val route = "profile/edit"
     }
 
+    data object Main : BaseLogDestination {
+        override val route = "main/{$MAIN_TAB_NAV_ARG}"
+
+        fun createRoute(tab: MainTab): String = "main/${tab.route}"
+    }
+
     data object Home : BaseLogDestination {
         override val route = "home"
+    }
+
+    data object Ranking : BaseLogDestination {
+        override val route = "ranking"
+    }
+
+    data object MyPage : BaseLogDestination {
+        override val route = "my"
     }
 
     data object Friends : BaseLogDestination {
@@ -51,3 +65,12 @@ sealed interface BaseLogDestination {
 }
 
 const val FRIEND_USER_ID_NAV_ARG = "friendUserId"
+const val MAIN_TAB_NAV_ARG = "mainTab"
+
+enum class MainTab(val route: String) {
+    Home(BaseLogDestination.Home.route),
+    Record(BaseLogDestination.Logbook.route),
+    Friends(BaseLogDestination.Friends.route),
+    Ranking(BaseLogDestination.Ranking.route),
+    MyPage(BaseLogDestination.MyPage.route)
+}

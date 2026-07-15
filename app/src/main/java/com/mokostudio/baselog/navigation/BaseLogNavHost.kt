@@ -16,11 +16,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mokostudio.baselog.core.startup.StartupDestination
 import com.mokostudio.baselog.feature.auth.login.LoginRoute
 import com.mokostudio.baselog.feature.friends.FriendProfileRoute
-import com.mokostudio.baselog.feature.friends.FriendsRoute
-import com.mokostudio.baselog.feature.home.HomeRoute
 import com.mokostudio.baselog.feature.log.LOG_ID_NAV_ARG
 import com.mokostudio.baselog.feature.log.LogEditorRoute
-import com.mokostudio.baselog.feature.log.LogbookRoute
 import com.mokostudio.baselog.feature.onboarding.OnboardingMode
 import com.mokostudio.baselog.feature.onboarding.OnboardingRoute
 import com.mokostudio.baselog.feature.splash.SplashRoute
@@ -68,7 +65,7 @@ fun BaseLogNavHost(
                     val route = when (destination) {
                         StartupDestination.Login -> BaseLogDestination.Login.route
                         StartupDestination.Onboarding -> BaseLogDestination.Onboarding.route
-                        StartupDestination.Home -> BaseLogDestination.Home.route
+                        StartupDestination.Home -> BaseLogDestination.Main.createRoute(MainTab.Home)
                     }
                     navController.navigate(route) {
                         popUpTo(BaseLogDestination.Splash.route) {
@@ -92,50 +89,35 @@ fun BaseLogNavHost(
                 mode = OnboardingMode.Edit,
                 onBackClick = navController::popBackStack,
                 onProfileSaved = {
-                    navController.navigate(BaseLogDestination.Home.route) {
-                        popUpTo(BaseLogDestination.Home.route) {
-                            inclusive = false
-                        }
-                        launchSingleTop = true
-                    }
+                    navController.popBackStack()
                 }
             )
         }
 
-        composable(BaseLogDestination.Home.route) {
-            HomeRoute(
-                onEditProfileClick = {
-                    navController.navigate(BaseLogDestination.EditProfile.route)
-                },
-                onViewFriendsClick = {
-                    navController.navigate(BaseLogDestination.Friends.route)
-                },
-                onViewLogsClick = {
-                    navController.navigate(BaseLogDestination.Logbook.route)
-                },
-                onAddLogClick = {
-                    navController.navigate(BaseLogDestination.CreateLog.route)
+        composable(
+            route = BaseLogDestination.Main.route,
+            arguments = listOf(
+                navArgument(MAIN_TAB_NAV_ARG) {
+                    type = NavType.StringType
                 }
             )
-        }
+        ) { backStack ->
+            val startTabRoute = backStack.arguments?.getString(MAIN_TAB_NAV_ARG)
+            val startTab = MainTab.entries.firstOrNull { it.route == startTabRoute } ?: MainTab.Home
 
-        composable(BaseLogDestination.Logbook.route) {
-            LogbookRoute(
-                onBackClick = navController::popBackStack,
+            MainRoute(
+                startTab = startTab,
                 onAddLogClick = {
                     navController.navigate(BaseLogDestination.CreateLog.route)
+                },
+                onFriendClick = { friendUserId ->
+                    navController.navigate(BaseLogDestination.FriendProfile.createRoute(friendUserId))
                 },
                 onEditLogClick = { logId ->
                     navController.navigate(BaseLogDestination.EditLog.createRoute(logId))
-                }
-            )
-        }
-
-        composable(BaseLogDestination.Friends.route) {
-            FriendsRoute(
-                onBackClick = navController::popBackStack,
-                onFriendClick = { friendUserId ->
-                    navController.navigate(BaseLogDestination.FriendProfile.createRoute(friendUserId))
+                },
+                onEditProfileClick = {
+                    navController.navigate(BaseLogDestination.EditProfile.route)
                 }
             )
         }
@@ -155,12 +137,7 @@ fun BaseLogNavHost(
             LogEditorRoute(
                 onBackClick = navController::popBackStack,
                 onSaved = {
-                    navController.navigate(BaseLogDestination.Logbook.route) {
-                        popUpTo(BaseLogDestination.CreateLog.route) {
-                            inclusive = true
-                        }
-                        launchSingleTop = true
-                    }
+                    navController.popBackStack()
                 },
                 onDeleted = {
                     navController.popBackStack()
@@ -182,12 +159,7 @@ fun BaseLogNavHost(
                     navController.popBackStack()
                 },
                 onDeleted = {
-                    navController.navigate(BaseLogDestination.Logbook.route) {
-                        popUpTo(BaseLogDestination.EditLog.route) {
-                            inclusive = true
-                        }
-                        launchSingleTop = true
-                    }
+                    navController.popBackStack()
                 }
             )
         }
@@ -197,18 +169,16 @@ fun BaseLogNavHost(
 internal fun StartupDestination.primaryRoute(): String = when (this) {
     StartupDestination.Login -> BaseLogDestination.Login.route
     StartupDestination.Onboarding -> BaseLogDestination.Onboarding.route
-    StartupDestination.Home -> BaseLogDestination.Home.route
+    StartupDestination.Home -> BaseLogDestination.Main.createRoute(MainTab.Home)
 }
 
 internal fun StartupDestination.allowedRoutes(): Set<String> = when (this) {
     StartupDestination.Login -> setOf(BaseLogDestination.Login.route)
     StartupDestination.Onboarding -> setOf(BaseLogDestination.Onboarding.route)
     StartupDestination.Home -> setOf(
-        BaseLogDestination.Home.route,
-        BaseLogDestination.Friends.route,
+        BaseLogDestination.Main.route,
         BaseLogDestination.FriendProfile.route,
         BaseLogDestination.EditProfile.route,
-        BaseLogDestination.Logbook.route,
         BaseLogDestination.CreateLog.route,
         BaseLogDestination.EditLog.route
     )

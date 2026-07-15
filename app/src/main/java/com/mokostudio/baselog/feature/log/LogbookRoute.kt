@@ -13,13 +13,10 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -33,10 +30,9 @@ import com.mokostudio.baselog.core.user.BaseballTeam
 import com.mokostudio.baselog.ui.theme.BaseLogTheme
 import java.time.LocalDate
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LogbookRoute(
-    onBackClick: () -> Unit,
+    contentPadding: PaddingValues,
     onAddLogClick: () -> Unit,
     onEditLogClick: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -44,31 +40,17 @@ fun LogbookRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            TopAppBar(
-                title = { Text(text = stringResource(id = R.string.logbook_title)) },
-                navigationIcon = {
-                    TextButton(onClick = onBackClick) {
-                        Text(text = stringResource(id = R.string.profile_edit_back))
-                    }
-                }
-            )
-        }
-    ) { innerPadding ->
-        LogbookScreen(
-            innerPadding = innerPadding,
-            uiState = uiState,
-            onYearSelected = viewModel::onYearSelected,
-            onAddLogClick = onAddLogClick,
-            onEditLogClick = onEditLogClick,
-            onDeleteLogClick = viewModel::onDeleteClick,
-            onDeleteDismissed = viewModel::onDeleteDismissed,
-            onDeleteConfirmed = viewModel::confirmDelete
-        )
-    }
+    LogbookScreen(
+        innerPadding = contentPadding,
+        modifier = modifier,
+        uiState = uiState,
+        onYearSelected = viewModel::onYearSelected,
+        onAddLogClick = onAddLogClick,
+        onEditLogClick = onEditLogClick,
+        onDeleteLogClick = viewModel::onDeleteClick,
+        onDeleteDismissed = viewModel::onDeleteDismissed,
+        onDeleteConfirmed = viewModel::confirmDelete
+    )
 }
 
 @Composable
@@ -80,11 +62,12 @@ internal fun LogbookScreen(
     onEditLogClick: (String) -> Unit,
     onDeleteLogClick: (BaseballLogEntry) -> Unit,
     onDeleteDismissed: () -> Unit,
-    onDeleteConfirmed: () -> Unit
+    onDeleteConfirmed: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     if (uiState.isLoading) {
         Column(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxSize()
                 .padding(innerPadding),
             verticalArrangement = Arrangement.Center
@@ -95,7 +78,7 @@ internal fun LogbookScreen(
     }
 
     LazyColumn(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(innerPadding),
         contentPadding = PaddingValues(horizontal = 24.dp, vertical = 24.dp),
@@ -103,7 +86,7 @@ internal fun LogbookScreen(
     ) {
         item {
             Text(
-                text = stringResource(id = R.string.logbook_heading),
+                text = stringResource(id = R.string.logbook_title),
                 style = MaterialTheme.typography.headlineLarge,
                 color = MaterialTheme.colorScheme.onBackground
             )

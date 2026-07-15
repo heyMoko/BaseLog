@@ -9,6 +9,16 @@
     <string name="login_dev_body">Sprint 1 uses Firebase Authentication with Google sign-in so the same session flow can ship to production without replacing the screen layer.</string>
     <string name="login_cta">Continue with Google</string>
     <string name="login_loading">Signing you in with Google...</string>
+    <string name="main_tab_home">홈</string>
+    <string name="main_tab_record">기록</string>
+    <string name="main_tab_friends">친구</string>
+    <string name="main_tab_ranking">랭킹</string>
+    <string name="main_tab_my">마이</string>
+    <string name="main_tab_home_short">홈</string>
+    <string name="main_tab_record_short">기록</string>
+    <string name="main_tab_friends_short">친구</string>
+    <string name="main_tab_ranking_short">랭킹</string>
+    <string name="main_tab_my_short">마이</string>
     <string name="home_title">Home</string>
     <string name="home_sign_out">Sign out</string>
     <string name="home_welcome">Welcome, %1$s</string>
@@ -36,9 +46,10 @@
     <string name="home_log_title">Start your baseball log</string>
     <string name="home_log_body">Save game days, track your record, and check your win rate by season.</string>
     <string name="home_view_logs">View logs</string>
+    <string name="home_view_ranking">View ranking</string>
     <string name="home_add_log">Add game log</string>
     <string name="home_profile_unavailable_title">We couldn\'t load your profile</string>
-    <string name="home_profile_unavailable_body">Your session is active, but the saved profile is missing or incomplete. Open profile edit to finish recovery before continuing.</string>
+    <string name="home_profile_unavailable_body">Your session is active, but the saved profile is missing or incomplete. Open My Page and finish profile recovery before continuing.</string>
     <string name="logbook_title">Baseball Log</string>
     <string name="logbook_heading">Your game-day record</string>
     <string name="logbook_summary_title">Win rate summary</string>
@@ -126,4 +137,14 @@
     <string name="friend_profile_year_filter_title">Filter by season</string>
     <string name="friend_profile_recent_logs_title">Recent game logs</string>
     <string name="friend_profile_recent_logs_empty">No baseball logs have been shared yet.</string>
+    <string name="ranking_title">Ranking</string>
+    <string name="ranking_body">Compare win rate, total games, and wins across you and your mutual friends.</string>
+    <string name="ranking_my_rank">Your current rank: #%1$d</string>
+    <string name="ranking_my_entry">%1$s · %2$s · %3$s</string>
+    <string name="ranking_my_rank_empty">Your ranking will appear after leaderboard data is loaded.</string>
+    <string name="ranking_empty">Add mutual friends and game logs to populate the ranking tab.</string>
+    <string name="my_page_title">My Page</string>
+    <string name="my_page_team">Favorite team: %1$s</string>
+    <string name="my_page_bio_empty">Add a short intro so other fans know what kind of ballpark visitor you are.</string>
+    <string name="my_page_actions_title">Account actions</string>
 </resources>

@@ -2,7 +2,6 @@ package com.mokostudio.baselog.feature.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mokostudio.baselog.core.auth.AuthRepository
 import com.mokostudio.baselog.core.user.UserProfileRepository
 import com.mokostudio.baselog.feature.friends.FriendLeaderboardLoadState
 import com.mokostudio.baselog.feature.friends.FriendLeaderboardRepository
@@ -16,11 +15,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val authRepository: AuthRepository,
     userProfileRepository: UserProfileRepository,
     baseballLogRepository: BaseballLogRepository,
     friendLeaderboardRepository: FriendLeaderboardRepository
@@ -75,12 +72,6 @@ class HomeViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = HomeUiState(isLoading = true)
         )
-
-    fun signOut() {
-        viewModelScope.launch {
-            authRepository.signOut()
-        }
-    }
 }
 
 data class HomeUiState(
