@@ -8,4 +8,6 @@ interface UserProfileRepository {
     fun observeCurrentUserProfile(): Flow<UserProfile?>
 
     suspend fun saveProfile(profile: UserProfileDraft): Result<Unit>
+
+    suspend fun syncCurrentPublicProfile(): Result<Unit>
 }

@@ -163,5 +163,9 @@ class OnboardingViewModelTest {
             savedProfile = profile
             return saveResult
         }
+
+        override suspend fun syncCurrentPublicProfile(): Result<Unit> {
+            return Result.success(Unit)
+        }
     }
 }

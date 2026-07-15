@@ -102,6 +102,42 @@ class FirebaseUserProfileRepository @Inject constructor(
             }
             .awaitCommit()
     }
+
+    override suspend fun syncCurrentPublicProfile(): Result<Unit> {
+        val auth = firebaseAuth ?: return Result.failure(
+            IllegalStateException("You need to be signed in before syncing your public profile.")
+        )
+        val db = firestore ?: return Result.failure(
+            IllegalStateException("Firestore is not configured. Check Firebase setup before syncing profiles.")
+        )
+        val user = auth.currentUser ?: return Result.failure(
+            IllegalStateException("You need to be signed in before syncing your public profile.")
+        )
+
+        val userDocument = db.collection(USERS_COLLECTION).document(user.uid)
+        val publicProfileDocument = db.collection(PUBLIC_PROFILES_COLLECTION).document(user.uid)
+        val userSnapshot = userDocument.awaitGet()
+        val userProfile = userSnapshot.toUserProfile()
+            ?: return Result.success(Unit)
+        val publicProfileSnapshot = publicProfileDocument.awaitGet()
+        val publicProfileData = hashMapOf<String, Any>(
+            FIELD_NICKNAME to userProfile.nickname,
+            FIELD_FAVORITE_TEAM_ID to userProfile.favoriteTeam.id,
+            FIELD_FAVORITE_TEAM_NAME to userProfile.favoriteTeam.displayName,
+            FIELD_BIO to userProfile.bio,
+            FIELD_PHOTO_URL to userProfile.photoUrl,
+            FIELD_UPDATED_AT to FieldValue.serverTimestamp()
+        )
+
+        if (!publicProfileSnapshot.exists()) {
+            publicProfileData[FIELD_CREATED_AT] = FieldValue.serverTimestamp()
+        }
+
+        return publicProfileDocument.awaitSet(
+            data = publicProfileData,
+            options = SetOptions.merge()
+        )
+    }
 }
 
 private fun FirebaseAuth.observeCurrentUserId(): Flow<String?> = callbackFlow {

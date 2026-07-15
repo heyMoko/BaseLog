@@ -221,6 +221,10 @@ class HomeViewModelTest {
         override suspend fun saveProfile(profile: UserProfileDraft): Result<Unit> {
             return Result.success(Unit)
         }
+
+        override suspend fun syncCurrentPublicProfile(): Result<Unit> {
+            return Result.success(Unit)
+        }
     }
 
     private class FakeBaseballLogRepository : BaseballLogRepository {

@@ -1,6 +1,9 @@
 package com.mokostudio.baselog.feature.friends
 
 import com.mokostudio.baselog.core.user.BaseballTeam
+import com.mokostudio.baselog.core.user.UserProfile
+import com.mokostudio.baselog.core.user.UserProfileDraft
+import com.mokostudio.baselog.core.user.UserProfileRepository
 import com.mokostudio.baselog.testutil.MainDispatcherRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -28,7 +31,11 @@ class FriendsViewModelTest {
             friendSummary("pending-1", "PendingFan"),
             friendSummary("new-1", "NewFan")
         )
-        val viewModel = FriendsViewModel(repository, FakeFriendLeaderboardRepository())
+        val viewModel = FriendsViewModel(
+            repository,
+            FakeUserProfileRepository(),
+            FakeFriendLeaderboardRepository()
+        )
         val collectionJob = backgroundScope.launch {
             viewModel.uiState.collect {}
         }
@@ -46,7 +53,11 @@ class FriendsViewModelTest {
     @Test
     fun acceptRequest_callsRepository() = runTest {
         val repository = FakeFriendsRepository()
-        val viewModel = FriendsViewModel(repository, FakeFriendLeaderboardRepository())
+        val viewModel = FriendsViewModel(
+            repository,
+            FakeUserProfileRepository(),
+            FakeFriendLeaderboardRepository()
+        )
         val collectionJob = backgroundScope.launch {
             viewModel.uiState.collect {}
         }
@@ -61,7 +72,11 @@ class FriendsViewModelTest {
     @Test
     fun removeFriend_callsRepository() = runTest {
         val repository = FakeFriendsRepository()
-        val viewModel = FriendsViewModel(repository, FakeFriendLeaderboardRepository())
+        val viewModel = FriendsViewModel(
+            repository,
+            FakeUserProfileRepository(),
+            FakeFriendLeaderboardRepository()
+        )
         val collectionJob = backgroundScope.launch {
             viewModel.uiState.collect {}
         }
@@ -100,7 +115,11 @@ class FriendsViewModelTest {
             ),
             availableYears = listOf(2026)
         )
-        val viewModel = FriendsViewModel(repository, leaderboardRepository)
+        val viewModel = FriendsViewModel(
+            repository,
+            FakeUserProfileRepository(),
+            leaderboardRepository
+        )
         val collectionJob = backgroundScope.launch {
             viewModel.uiState.collect {}
         }
@@ -159,6 +178,16 @@ class FriendsViewModelTest {
         val state = MutableStateFlow(FriendLeaderboardLoadState())
 
         override fun observeLeaderboard(): Flow<FriendLeaderboardLoadState> = state
+    }
+
+    private class FakeUserProfileRepository : UserProfileRepository {
+        override fun observeProfileCompleted(): Flow<Boolean> = MutableStateFlow(false)
+
+        override fun observeCurrentUserProfile(): Flow<UserProfile?> = MutableStateFlow(null)
+
+        override suspend fun saveProfile(profile: UserProfileDraft): Result<Unit> = Result.success(Unit)
+
+        override suspend fun syncCurrentPublicProfile(): Result<Unit> = Result.success(Unit)
     }
 
     private fun friendSummary(userId: String, nickname: String): FriendSummary {

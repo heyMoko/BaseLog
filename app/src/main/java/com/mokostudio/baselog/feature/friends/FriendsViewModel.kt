@@ -2,6 +2,7 @@ package com.mokostudio.baselog.feature.friends
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mokostudio.baselog.core.user.UserProfileRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.withTimeout
@@ -16,6 +17,7 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class FriendsViewModel @Inject constructor(
     private val friendsRepository: FriendsRepository,
+    userProfileRepository: UserProfileRepository,
     friendLeaderboardRepository: FriendLeaderboardRepository
 ) : ViewModel() {
     private val searchQuery = MutableStateFlow("")
@@ -25,6 +27,12 @@ class FriendsViewModel @Inject constructor(
     private val errorMessage = MutableStateFlow<String?>(null)
     private val selectedLeaderboardMetric = MutableStateFlow(LeaderboardMetric.WinRate)
     private val selectedLeaderboardYear = MutableStateFlow<Int?>(null)
+
+    init {
+        viewModelScope.launch {
+            userProfileRepository.syncCurrentPublicProfile()
+        }
+    }
 
     val uiState: StateFlow<FriendsUiState> =
         combine(
