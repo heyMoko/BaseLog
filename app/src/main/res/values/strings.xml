@@ -95,8 +95,22 @@
     <string name="friends_reject">Reject</string>
     <string name="friends_list_title">Your friends</string>
     <string name="friends_list_empty">You do not have any mutual friends yet.</string>
+    <string name="friends_view_profile">View profile</string>
     <string name="friends_remove">Remove friend</string>
     <string name="friends_remove_confirm_title">Remove this friend?</string>
     <string name="friends_remove_confirm_body">%1$s will no longer appear in your friend list or future leaderboards.</string>
     <string name="friends_remove_confirm_action">Remove</string>
+    <string name="friend_profile_title">Friend profile</string>
+    <string name="friend_profile_missing_title">Friend profile unavailable</string>
+    <string name="friend_profile_missing_body">This friend could not be loaded. They may have been removed from your mutual friends list.</string>
+    <string name="friend_profile_summary_title">Game-day stats</string>
+    <string name="friend_profile_team">Favorite team: %1$s</string>
+    <string name="friend_profile_bio_empty">No intro added yet.</string>
+    <string name="friend_profile_total_games">Total game logs</string>
+    <string name="friend_profile_overall_win_rate">Overall win rate</string>
+    <string name="friend_profile_year_win_rate">%1$d season win rate</string>
+    <string name="friend_profile_record">%1$dW %2$dL %3$dD</string>
+    <string name="friend_profile_year_filter_title">Filter by season</string>
+    <string name="friend_profile_recent_logs_title">Recent game logs</string>
+    <string name="friend_profile_recent_logs_empty">No baseball logs have been shared yet.</string>
 </resources>

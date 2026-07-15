@@ -18,7 +18,9 @@ import com.mokostudio.baselog.core.user.FirebaseUserProfileRepository
 import com.mokostudio.baselog.core.user.UserProfileRepository
 import com.mokostudio.baselog.feature.log.BaseballLogRepository
 import com.mokostudio.baselog.feature.log.FirebaseBaseballLogRepository
+import com.mokostudio.baselog.feature.friends.FirebaseFriendStatsRepository
 import com.mokostudio.baselog.feature.friends.FirebaseFriendsRepository
+import com.mokostudio.baselog.feature.friends.FriendStatsRepository
 import com.mokostudio.baselog.feature.friends.FriendsRepository
 import dagger.Binds
 import dagger.Module
@@ -66,6 +68,12 @@ abstract class AppBindModule {
     abstract fun bindFriendsRepository(
         impl: FirebaseFriendsRepository
     ): FriendsRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindFriendStatsRepository(
+        impl: FirebaseFriendStatsRepository
+    ): FriendStatsRepository
 }
 
 @Module

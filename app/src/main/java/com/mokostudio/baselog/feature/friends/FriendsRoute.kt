@@ -42,6 +42,7 @@ import com.mokostudio.baselog.ui.theme.BaseLogTheme
 @Composable
 fun FriendsRoute(
     onBackClick: () -> Unit,
+    onFriendClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: FriendsViewModel = hiltViewModel()
 ) {
@@ -70,6 +71,7 @@ fun FriendsRoute(
             onAcceptClick = viewModel::acceptRequest,
             onRejectClick = viewModel::rejectRequest,
             onRemoveFriendClick = viewModel::removeFriend,
+            onFriendClick = onFriendClick,
             onErrorDismissed = viewModel::clearErrorMessage
         )
     }
@@ -85,6 +87,7 @@ internal fun FriendsScreen(
     onAcceptClick: (String) -> Unit,
     onRejectClick: (String) -> Unit,
     onRemoveFriendClick: (String) -> Unit,
+    onFriendClick: (String) -> Unit,
     onErrorDismissed: () -> Unit
 ) {
     var pendingRemoveFriend by remember { mutableStateOf<FriendSummary?>(null) }
@@ -204,6 +207,9 @@ internal fun FriendsScreen(
                     FriendCard(
                         friend = friend,
                         isProcessing = friend.userId in uiState.actionInFlightIds,
+                        onViewProfileClick = {
+                            onFriendClick(friend.userId)
+                        },
                         onRemoveClick = {
                             pendingRemoveFriend = friend
                         }
@@ -394,6 +400,7 @@ private fun IncomingRequestCard(
 private fun FriendCard(
     friend: FriendSummary,
     isProcessing: Boolean,
+    onViewProfileClick: () -> Unit,
     onRemoveClick: () -> Unit
 ) {
     Card(modifier = Modifier.fillMaxWidth()) {
@@ -415,8 +422,16 @@ private fun FriendCard(
                 )
             }
             OutlinedButton(
+                onClick = onViewProfileClick,
+                enabled = !isProcessing,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = stringResource(id = R.string.friends_view_profile))
+            }
+            OutlinedButton(
                 onClick = onRemoveClick,
-                enabled = !isProcessing
+                enabled = !isProcessing,
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text(text = stringResource(id = R.string.friends_remove))
             }
@@ -473,6 +488,7 @@ private fun FriendsScreenPreview() {
             onAcceptClick = {},
             onRejectClick = {},
             onRemoveFriendClick = {},
+            onFriendClick = {},
             onErrorDismissed = {}
         )
     }

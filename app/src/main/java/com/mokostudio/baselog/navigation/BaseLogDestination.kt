@@ -29,6 +29,12 @@ sealed interface BaseLogDestination {
         override val route = "friends"
     }
 
+    data object FriendProfile : BaseLogDestination {
+        override val route = "friends/profile/{$FRIEND_USER_ID_NAV_ARG}"
+
+        fun createRoute(friendUserId: String): String = "friends/profile/$friendUserId"
+    }
+
     data object Logbook : BaseLogDestination {
         override val route = "logbook"
     }
@@ -43,3 +49,5 @@ sealed interface BaseLogDestination {
         fun createRoute(logId: String): String = "log/edit/$logId"
     }
 }
+
+const val FRIEND_USER_ID_NAV_ARG = "friendUserId"
