@@ -21,14 +21,14 @@ class FriendProfileViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private val friendUserId: String = checkNotNull(savedStateHandle[FRIEND_USER_ID_NAV_ARG])
-    private val selectedYear = MutableStateFlow<Int?>(null)
+    private val yearSelection = MutableStateFlow(YearSelection())
 
     val uiState: StateFlow<FriendProfileUiState> =
         combine(
             friendStatsRepository.observeFriendProfile(friendUserId),
             friendStatsRepository.observeFriendLogs(friendUserId),
-            selectedYear
-        ) { profileState, logsState, selectedYearValue ->
+            yearSelection
+        ) { profileState, logsState, selection ->
             val profile = profileState.profile
             val logs = logsState.logs
             val errorMessage = listOfNotNull(
@@ -47,8 +47,12 @@ class FriendProfileViewModel @Inject constructor(
                     .map { it.attendedDate.year }
                     .distinct()
                     .sortedDescending()
-                val resolvedYear = selectedYearValue?.takeIf { it in availableYears }
-                    ?: availableYears.firstOrNull()
+                val resolvedYear = when {
+                    !selection.hasUserSelection -> availableYears.firstOrNull()
+                    selection.year == null -> null
+                    selection.year in availableYears -> selection.year
+                    else -> availableYears.firstOrNull()
+                }
 
                 FriendProfileUiState(
                     isLoading = false,
@@ -70,9 +74,16 @@ class FriendProfileViewModel @Inject constructor(
         )
 
     fun onYearSelected(year: Int?) {
-        selectedYear.update { year }
+        yearSelection.update {
+            YearSelection(year = year, hasUserSelection = true)
+        }
     }
 }
+
+private data class YearSelection(
+    val year: Int? = null,
+    val hasUserSelection: Boolean = false
+)
 
 data class FriendProfileUiState(
     val isLoading: Boolean = false,

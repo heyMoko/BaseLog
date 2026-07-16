@@ -103,6 +103,44 @@ class FriendProfileViewModelTest {
     }
 
     @Test
+    fun onYearSelected_all_keepsOverallSelection() = runTest {
+        val repository = FakeFriendStatsRepository()
+        repository.profile.value = FriendProfileLoadState(
+            profile = FriendSummary(
+                userId = "friend-1",
+                nickname = "Moko",
+                favoriteTeam = BaseballTeam.LgTwins,
+                bio = "",
+                photoUrl = ""
+            )
+        )
+        repository.logsState.value = FriendLogsLoadState(
+            logs = listOf(
+                logEntry("1", "2026-07-12", BaseballTeam.DoosanBears, BaseballGameResult.Win),
+                logEntry("2", "2025-07-06", BaseballTeam.SsgLanders, BaseballGameResult.Loss)
+            )
+        )
+        val viewModel = FriendProfileViewModel(
+            friendStatsRepository = repository,
+            savedStateHandle = SavedStateHandle(
+                mapOf(FRIEND_USER_ID_NAV_ARG to "friend-1")
+            )
+        )
+        val collectionJob: Job = backgroundScope.launch {
+            viewModel.uiState.collect {}
+        }
+        advanceUntilIdle()
+
+        viewModel.onYearSelected(null)
+        advanceUntilIdle()
+
+        assertEquals(null, viewModel.uiState.value.selectedYear)
+        assertEquals(null, viewModel.uiState.value.selectedYearSummary)
+        assertEquals(50, viewModel.uiState.value.overallSummary.winRatePercent)
+        collectionJob.cancel()
+    }
+
+    @Test
     fun uiState_marksFriendUnavailableWhenProfileMissing() = runTest {
         val repository = FakeFriendStatsRepository()
         val viewModel = FriendProfileViewModel(
