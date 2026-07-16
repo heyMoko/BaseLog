@@ -10,7 +10,7 @@ class BaseLogNavHostRoutingTest {
     fun homeDestination_allowsEditProfileRoute() {
         val allowedRoutes = StartupDestination.Home.allowedRoutes()
 
-        assertTrue(BaseLogDestination.Home.route in allowedRoutes)
+        assertTrue(BaseLogDestination.Main.route in allowedRoutes)
         assertTrue(BaseLogDestination.EditProfile.route in allowedRoutes)
         assertTrue(BaseLogDestination.EditLog.route in allowedRoutes)
         assertTrue(BaseLogDestination.FriendProfile.route in allowedRoutes)
@@ -30,6 +30,9 @@ class BaseLogNavHostRoutingTest {
             BaseLogDestination.Onboarding.route,
             StartupDestination.Onboarding.primaryRoute()
         )
-        assertEquals(BaseLogDestination.Home.route, StartupDestination.Home.primaryRoute())
+        assertEquals(
+            BaseLogDestination.Main.createRoute(MainTab.Home),
+            StartupDestination.Home.primaryRoute()
+        )
     }
 }

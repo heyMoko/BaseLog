@@ -64,5 +64,7 @@ class DefaultAppStartupRepositoryTest {
         override suspend fun saveProfile(
             profile: com.mokostudio.baselog.core.user.UserProfileDraft
         ): Result<Unit> = Result.success(Unit)
+
+        override suspend fun syncCurrentPublicProfile(): Result<Unit> = Result.success(Unit)
     }
 }
