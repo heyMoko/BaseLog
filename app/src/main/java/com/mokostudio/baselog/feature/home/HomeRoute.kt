@@ -3,6 +3,7 @@ package com.mokostudio.baselog.feature.home
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,6 +47,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -101,24 +103,7 @@ internal fun HomeScreen(
                 .padding(bottom = 28.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            uiState.profile?.let { profile ->
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = stringResource(id = R.string.home_welcome, profile.nickname),
-                        style = MaterialTheme.typography.headlineLarge,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = stringResource(id = R.string.home_team, profile.favoriteTeamName),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            }
+            BaseLogBrandHeader(modifier = Modifier.fillMaxWidth())
 
             WinRateGaugeCard(
                 summary = uiState.logSummary,
@@ -156,6 +141,40 @@ internal fun HomeScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun BaseLogBrandHeader(
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.padding(top = 2.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Surface(
+            modifier = Modifier.size(48.dp),
+            shape = RoundedCornerShape(16.dp),
+            color = Color(0xFFFFF3EA),
+            shadowElevation = 3.dp
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Image(
+                    painter = painterResource(id = R.drawable.baselog_mark),
+                    contentDescription = null,
+                    modifier = Modifier.size(36.dp)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = stringResource(id = R.string.app_name),
+            style = MaterialTheme.typography.displaySmall,
+            color = Color(0xFF081321),
+            fontWeight = FontWeight.ExtraBold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 

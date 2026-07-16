@@ -27,6 +27,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -34,6 +36,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mokostudio.baselog.R
 import com.mokostudio.baselog.core.user.BaseballTeam
 import com.mokostudio.baselog.ui.theme.BaseLogTheme
+import com.mokostudio.baselog.ui.theme.Navy900
 
 @Composable
 fun FriendsRoute(
@@ -91,7 +94,7 @@ internal fun FriendsScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
-                SectionHeading(title = stringResource(id = R.string.friends_title))
+                TopLevelTitle(title = stringResource(id = R.string.friends_title))
             }
 
             item {
@@ -255,6 +258,18 @@ internal fun FriendsScreen(
             }
         )
     }
+}
+
+@Composable
+private fun TopLevelTitle(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.displaySmall,
+        color = Navy900,
+        fontWeight = FontWeight.ExtraBold,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
+    )
 }
 
 @Composable

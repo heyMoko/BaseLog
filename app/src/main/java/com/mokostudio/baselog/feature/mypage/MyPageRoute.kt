@@ -47,6 +47,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mokostudio.baselog.R
 import com.mokostudio.baselog.ui.theme.BaseLogTheme
+import com.mokostudio.baselog.ui.theme.Navy900
 
 @Composable
 fun MyPageRoute(
@@ -93,8 +94,11 @@ internal fun MyPageScreen(
         ) {
             Text(
                 text = stringResource(id = R.string.my_page_title),
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.onBackground
+                style = MaterialTheme.typography.displaySmall,
+                color = Navy900,
+                fontWeight = FontWeight.ExtraBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
 
             uiState.profile?.let { profile ->
