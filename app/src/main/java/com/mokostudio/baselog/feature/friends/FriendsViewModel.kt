@@ -222,10 +222,10 @@ private data class FriendsLocalState(
     val errorMessage: String?
 )
 
-private const val FRIENDS_SEARCH_UNKNOWN = "We couldn't search for users. Try again."
-private const val FRIENDS_SEARCH_TIMEOUT = "Search is taking too long. Check your connection and try again."
-private const val FRIENDS_REQUEST_UNKNOWN = "We couldn't send that friend request. Try again."
-private const val FRIENDS_ACCEPT_UNKNOWN = "We couldn't accept that request. Try again."
-private const val FRIENDS_REJECT_UNKNOWN = "We couldn't reject that request. Try again."
-private const val FRIENDS_REMOVE_UNKNOWN = "We couldn't remove that friend. Try again."
+private const val FRIENDS_SEARCH_UNKNOWN = "사용자를 검색하지 못했어요. 다시 시도해주세요."
+private const val FRIENDS_SEARCH_TIMEOUT = "검색이 오래 걸리고 있어요. 네트워크 상태를 확인한 뒤 다시 시도해주세요."
+private const val FRIENDS_REQUEST_UNKNOWN = "친구 요청을 보내지 못했어요. 다시 시도해주세요."
+private const val FRIENDS_ACCEPT_UNKNOWN = "친구 요청을 수락하지 못했어요. 다시 시도해주세요."
+private const val FRIENDS_REJECT_UNKNOWN = "친구 요청을 거절하지 못했어요. 다시 시도해주세요."
+private const val FRIENDS_REMOVE_UNKNOWN = "친구를 삭제하지 못했어요. 다시 시도해주세요."
 private const val FRIENDS_SEARCH_TIMEOUT_MS = 10_000L

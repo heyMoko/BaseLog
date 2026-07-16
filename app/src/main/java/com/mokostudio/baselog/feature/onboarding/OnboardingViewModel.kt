@@ -134,6 +134,6 @@ sealed interface OnboardingEvent {
     data class ProfileSaved(val mode: OnboardingMode) : OnboardingEvent
 }
 
-private const val ONBOARDING_ERROR_NICKNAME = "Nickname must be at least 2 characters."
-private const val ONBOARDING_ERROR_TEAM = "Choose your favorite team to continue."
-private const val ONBOARDING_ERROR_UNKNOWN = "We couldn't save your profile. Try again."
+private const val ONBOARDING_ERROR_NICKNAME = "닉네임은 2자 이상이어야 합니다."
+private const val ONBOARDING_ERROR_TEAM = "응원팀을 선택해주세요."
+private const val ONBOARDING_ERROR_UNKNOWN = "프로필을 저장하지 못했어요. 다시 시도해주세요."

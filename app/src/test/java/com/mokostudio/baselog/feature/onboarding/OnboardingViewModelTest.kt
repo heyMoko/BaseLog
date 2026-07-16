@@ -32,7 +32,7 @@ class OnboardingViewModelTest {
         viewModel.saveProfile()
 
         assertEquals(
-            "Nickname must be at least 2 characters.",
+            "닉네임은 2자 이상이어야 합니다.",
             viewModel.uiState.value.errorMessage
         )
     }
@@ -45,7 +45,7 @@ class OnboardingViewModelTest {
         viewModel.saveProfile()
 
         assertEquals(
-            "Choose your favorite team to continue.",
+            "응원팀을 선택해주세요.",
             viewModel.uiState.value.errorMessage
         )
     }

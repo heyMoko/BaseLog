@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -166,27 +167,23 @@ private fun LeaderboardFilterSection(
                     FilterChipButton(
                         label = metric.label(),
                         isSelected = leaderboard.selectedMetric == metric,
-                        onClick = { onMetricSelected(metric) },
-                        modifier = Modifier.weight(1f)
+                        onClick = { onMetricSelected(metric) }
                     )
                 }
             }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                FilterChipButton(
-                    label = stringResource(id = R.string.logbook_filter_all),
-                    isSelected = leaderboard.selectedYear == null,
-                    onClick = { onYearSelected(null) },
-                    modifier = Modifier.weight(1f)
-                )
-                leaderboard.availableYears.take(3).forEach { year ->
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                item {
+                    FilterChipButton(
+                        label = stringResource(id = R.string.logbook_filter_all),
+                        isSelected = leaderboard.selectedYear == null,
+                        onClick = { onYearSelected(null) }
+                    )
+                }
+                items(leaderboard.availableYears, key = { it }) { year ->
                     FilterChipButton(
                         label = year.toString(),
                         isSelected = leaderboard.selectedYear == year,
-                        onClick = { onYearSelected(year) },
-                        modifier = Modifier.weight(1f)
+                        onClick = { onYearSelected(year) }
                     )
                 }
             }
@@ -259,15 +256,14 @@ private fun LeaderboardEntryCard(entry: RankedFriendLeaderboardEntry) {
 private fun FilterChipButton(
     label: String,
     isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    onClick: () -> Unit
 ) {
     if (isSelected) {
-        Button(onClick = onClick, modifier = modifier) {
+        Button(onClick = onClick) {
             Text(text = label)
         }
     } else {
-        OutlinedButton(onClick = onClick, modifier = modifier) {
+        OutlinedButton(onClick = onClick) {
             Text(text = label)
         }
     }

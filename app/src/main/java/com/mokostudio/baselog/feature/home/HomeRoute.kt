@@ -3,7 +3,6 @@ package com.mokostudio.baselog.feature.home
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,7 +22,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Article
-import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.outlined.StickyNote2
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.EmojiEvents
@@ -53,6 +51,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -88,7 +87,7 @@ internal fun HomeScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 24.dp, vertical = 20.dp)
+            .padding(start = 24.dp, end = 24.dp, top = 20.dp)
     ) {
         if (uiState.isLoading) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
@@ -97,8 +96,9 @@ internal fun HomeScreen(
 
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 28.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             uiState.profile?.let { profile ->
@@ -131,39 +131,10 @@ internal fun HomeScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surface,
-                tonalElevation = 0.dp,
-                shadowElevation = 4.dp
-            ) {
-                Column(
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 22.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.home_cta_title),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = stringResource(id = R.string.home_cta_body),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Button(
-                        onClick = onAddLogClick,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(text = stringResource(id = R.string.home_cta_action))
-                    }
-                }
-            }
+            HomeCallToActionCard(
+                onAddLogClick = onAddLogClick,
+                modifier = Modifier.fillMaxWidth()
+            )
 
             if (uiState.isProfileUnavailable) {
                 Card(modifier = Modifier.fillMaxWidth()) {
@@ -189,31 +160,65 @@ internal fun HomeScreen(
 }
 
 @Composable
+private fun HomeCallToActionCard(
+    onAddLogClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(24.dp),
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 0.dp,
+        shadowElevation = 2.dp
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Text(
+                text = stringResource(id = R.string.home_cta_title),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = stringResource(id = R.string.home_cta_body),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            Button(
+                onClick = onAddLogClick,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = stringResource(id = R.string.home_cta_action))
+            }
+        }
+    }
+}
+
+@Composable
 private fun WinRateGaugeCard(
     summary: HomeLogSummary,
     modifier: Modifier = Modifier
 ) {
-    val cardShape = RoundedCornerShape(28.dp)
-
     Surface(
         modifier = modifier,
-        shape = cardShape,
+        shape = RoundedCornerShape(28.dp),
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 0.dp,
-        shadowElevation = 6.dp
+        shadowElevation = 4.dp
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 18.dp, vertical = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             DashboardCardHeader()
-
             GaugeSection(summary = summary)
-
             HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
-
             StatsRow(summary = summary)
-
             SummaryMessageBanner(
                 message = summary.overallMessage
                     ?: stringResource(id = R.string.home_dashboard_total_caption)
@@ -251,15 +256,10 @@ private fun DashboardCardHeader() {
                 text = stringResource(id = R.string.home_dashboard_subtitle),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
         }
-        Icon(
-            imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 }
 
@@ -275,7 +275,7 @@ private fun GaugeSection(summary: HomeLogSummary) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 8.dp),
+            .padding(top = 6.dp),
         contentAlignment = Alignment.Center
     ) {
         WinRateGauge(
@@ -429,7 +429,7 @@ private fun HomeStatItem(
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
-            maxLines = 1,
+            maxLines = 2,
             overflow = TextOverflow.Ellipsis
         )
         Text(
@@ -480,7 +480,7 @@ private fun SummaryMessageBanner(message: String) {
                     text = message,
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
             }
@@ -499,11 +499,11 @@ private fun RecentGameLogsCard(
         shape = RoundedCornerShape(28.dp),
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 0.dp,
-        shadowElevation = 6.dp
+        shadowElevation = 4.dp
     ) {
         Column(
-            modifier = Modifier.padding(horizontal = 18.dp, vertical = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            modifier = Modifier.padding(horizontal = 18.dp, vertical = 18.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -528,11 +528,6 @@ private fun RecentGameLogsCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
             }
 
             if (logs.isEmpty()) {
@@ -540,7 +535,7 @@ private fun RecentGameLogsCard(
                     text = stringResource(id = R.string.home_recent_logs_empty),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
             } else {
@@ -571,18 +566,18 @@ private fun RecentLogRow(log: HomeRecentLog) {
     ) {
         Column(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Text(
                 text = log.attendedDate,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = stringResource(id = R.string.home_recent_logs_opponent, log.opponentTeamName),
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.primary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -620,7 +615,7 @@ private fun ResultPill(
 @Composable
 private fun HomeHeaderIcon(
     icon: @Composable () -> Unit,
-    size: androidx.compose.ui.unit.Dp = 52.dp
+    size: Dp = 52.dp
 ) {
     Box(
         modifier = Modifier
@@ -635,24 +630,24 @@ private fun HomeHeaderIcon(
 
 private val HomeRecentLog.resultLabel: String
     get() = when (result) {
-        BaseballGameResult.Win -> "Win"
-        BaseballGameResult.Loss -> "Loss"
-        BaseballGameResult.Draw -> "Draw"
+        BaseballGameResult.Win -> "승"
+        BaseballGameResult.Loss -> "패"
+        BaseballGameResult.Draw -> "무"
     }
 
 @Composable
 private fun HomeRecentLog.resultColor(): Color = when (result) {
-        BaseballGameResult.Win -> Color(0xFF16A34A)
-        BaseballGameResult.Loss -> Color(0xFFDC2626)
-        BaseballGameResult.Draw -> MaterialTheme.colorScheme.onSurfaceVariant
-    }
+    BaseballGameResult.Win -> Color(0xFF16A34A)
+    BaseballGameResult.Loss -> Color(0xFFDC2626)
+    BaseballGameResult.Draw -> MaterialTheme.colorScheme.onSurfaceVariant
+}
 
 @Composable
 private fun HomeRecentLog.resultContainerColor(): Color = when (result) {
-        BaseballGameResult.Win -> Color(0xFFE7F7EB)
-        BaseballGameResult.Loss -> Color(0xFFFBE8EA)
-        BaseballGameResult.Draw -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
-    }
+    BaseballGameResult.Win -> Color(0xFFE7F7EB)
+    BaseballGameResult.Loss -> Color(0xFFFBE8EA)
+    BaseballGameResult.Draw -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
+}
 
 @Preview(showBackground = true)
 @Composable
@@ -662,27 +657,27 @@ private fun HomeScreenPreview() {
             uiState = HomeUiState(
                 profile = HomeProfileSummary(
                     nickname = "komo",
-                    favoriteTeamName = "Hanwha Eagles"
+                    favoriteTeamName = "한화 이글스"
                 ),
                 logSummary = HomeLogSummary(
                     totalGames = 2,
                     overallWinRatePercent = 50,
-                    overallRecord = "1W 1L 0D",
-                    overallMessage = "Your game-day instincts are solid.",
+                    overallRecord = "1승 1패 0무",
+                    overallMessage = "나쁘지 않은 직관 감각이에요.",
                     currentYear = 2026,
                     currentYearWinRatePercent = 50,
-                    currentYearRecord = "1W 1L 0D",
+                    currentYearRecord = "1승 1패 0무",
                     recentLogs = listOf(
                         HomeRecentLog(
                             id = "1",
                             attendedDate = "2026-07-14",
-                            opponentTeamName = "LG Twins",
+                            opponentTeamName = "LG 트윈스",
                             result = BaseballGameResult.Win
                         ),
                         HomeRecentLog(
                             id = "2",
                             attendedDate = "2026-07-08",
-                            opponentTeamName = "Doosan Bears",
+                            opponentTeamName = "두산 베어스",
                             result = BaseballGameResult.Loss
                         )
                     ),

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -138,23 +139,20 @@ internal fun LogbookScreen(
         }
 
         item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OutlinedButton(
-                    onClick = { onYearSelected(null) },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(text = stringResource(id = R.string.logbook_filter_all))
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                item {
+                    YearFilterChipButton(
+                        label = stringResource(id = R.string.logbook_filter_all),
+                        isSelected = uiState.selectedYear == null,
+                        onClick = { onYearSelected(null) }
+                    )
                 }
-                uiState.availableYears.take(3).forEach { year ->
-                    OutlinedButton(
-                        onClick = { onYearSelected(year) },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(text = year.toString())
-                    }
+                items(uiState.availableYears, key = { it }) { year ->
+                    YearFilterChipButton(
+                        label = year.toString(),
+                        isSelected = uiState.selectedYear == year,
+                        onClick = { onYearSelected(year) }
+                    )
                 }
             }
         }
@@ -281,6 +279,23 @@ internal fun LogbookScreen(
                 }
             }
         )
+    }
+}
+
+@Composable
+private fun YearFilterChipButton(
+    label: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    if (isSelected) {
+        Button(onClick = onClick) {
+            Text(text = label)
+        }
+    } else {
+        OutlinedButton(onClick = onClick) {
+            Text(text = label)
+        }
     }
 }
 

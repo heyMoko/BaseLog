@@ -103,4 +103,4 @@ data class LogbookUiState(
         get() = !isLoading && logs.isEmpty()
 }
 
-private const val LOGBOOK_DELETE_ERROR_UNKNOWN = "We couldn't delete this game log. Try again."
+private const val LOGBOOK_DELETE_ERROR_UNKNOWN = "직관 기록을 삭제하지 못했어요. 다시 시도해주세요."

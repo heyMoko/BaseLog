@@ -36,7 +36,7 @@ class WinRateCalculatorTest {
         assertEquals(1, summary.draws)
         assertEquals(0.5, summary.winRate ?: 0.0, 0.0001)
         assertEquals(50, summary.winRatePercent)
-        assertEquals("Your game-day instincts are solid.", summary.message)
+        assertEquals("나쁘지 않은 직관 감각이에요.", summary.message)
     }
 
     @Test
@@ -100,11 +100,11 @@ class WinRateCalculatorTest {
             )
         )
 
-        assertEquals("You're a good luck charm!", perfect.message)
+        assertEquals("당신은 승리요정!", perfect.message)
         assertEquals(100, perfect.winRatePercent)
-        assertEquals("Odds feel pretty good today.", strong.message)
+        assertEquals("오늘도 이길 확률이 꽤 높겠는데요?", strong.message)
         assertEquals(75, strong.winRatePercent)
-        assertEquals("Baseball can still flip at the last moment.", low.message)
+        assertEquals("그래도 야구는 끝날 때까지 모르는 법.", low.message)
         assertEquals(25, low.winRatePercent)
     }
 

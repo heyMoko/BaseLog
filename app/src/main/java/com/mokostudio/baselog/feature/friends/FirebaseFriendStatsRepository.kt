@@ -191,9 +191,9 @@ private const val FIELD_TEAM_ID = "teamId"
 private const val FIELD_TEAM_NAME = "teamName"
 private const val FIELD_RESULT = "result"
 private const val MIN_NICKNAME_LENGTH = 2
-private const val FRIEND_PROFILE_LOAD_ERROR = "We couldn't load this friend's profile right now."
+private const val FRIEND_PROFILE_LOAD_ERROR = "친구 프로필을 지금 불러오지 못했어요."
 private const val FRIEND_PROFILE_PERMISSION_ERROR =
-    "This friend's profile is blocked by Firestore rules. Sync the latest rules in Firebase Console and try again."
-private const val FRIEND_LOGS_LOAD_ERROR = "We couldn't load this friend's game logs right now."
+    "이 친구의 프로필이 Firestore rules에 의해 차단되어 있어요. Firebase Console의 최신 rules를 반영한 뒤 다시 시도해주세요."
+private const val FRIEND_LOGS_LOAD_ERROR = "친구의 직관 기록을 지금 불러오지 못했어요."
 private const val FRIEND_LOGS_PERMISSION_ERROR =
-    "This friend's game logs are blocked by Firestore rules. Sync the latest rules in Firebase Console and try again."
+    "이 친구의 직관 기록이 Firestore rules에 의해 차단되어 있어요. Firebase Console의 최신 rules를 반영한 뒤 다시 시도해주세요."

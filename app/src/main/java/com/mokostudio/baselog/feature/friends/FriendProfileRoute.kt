@@ -3,13 +3,15 @@ package com.mokostudio.baselog.feature.friends
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Card
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -173,23 +175,20 @@ internal fun FriendProfileScreen(
             }
 
             item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedButton(
-                        onClick = { onYearSelected(null) },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(text = stringResource(id = R.string.logbook_filter_all))
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    item {
+                        FriendYearFilterChipButton(
+                            label = stringResource(id = R.string.logbook_filter_all),
+                            isSelected = uiState.selectedYear == null,
+                            onClick = { onYearSelected(null) }
+                        )
                     }
-                    uiState.availableYears.take(3).forEach { year ->
-                        OutlinedButton(
-                            onClick = { onYearSelected(year) },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(text = year.toString())
-                        }
+                    items(uiState.availableYears, key = { it }) { year ->
+                        FriendYearFilterChipButton(
+                            label = year.toString(),
+                            isSelected = uiState.selectedYear == year,
+                            onClick = { onYearSelected(year) }
+                        )
                     }
                 }
             }
@@ -266,6 +265,23 @@ internal fun FriendProfileScreen(
 }
 
 @Composable
+private fun FriendYearFilterChipButton(
+    label: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    if (isSelected) {
+        Button(onClick = onClick) {
+            Text(text = label)
+        }
+    } else {
+        OutlinedButton(onClick = onClick) {
+            Text(text = label)
+        }
+    }
+}
+
+@Composable
 private fun StatSummaryCard(
     title: String,
     highlight: String?,
@@ -321,9 +337,9 @@ private fun overallRecordText(summary: WinRateSummary): String? {
 }
 
 private fun BaseballGameResult.displayName(): String = when (this) {
-    BaseballGameResult.Win -> "Win"
-    BaseballGameResult.Loss -> "Loss"
-    BaseballGameResult.Draw -> "Draw"
+    BaseballGameResult.Win -> "승"
+    BaseballGameResult.Loss -> "패"
+    BaseballGameResult.Draw -> "무"
 }
 
 @Preview(showBackground = true)

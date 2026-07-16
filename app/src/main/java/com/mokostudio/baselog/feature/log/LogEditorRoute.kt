@@ -347,7 +347,7 @@ private fun LogEditorScreenPreview() {
 }
 
 internal fun BaseballGameResult.displayName(): String = when (this) {
-    BaseballGameResult.Win -> "Win"
-    BaseballGameResult.Loss -> "Loss"
-    BaseballGameResult.Draw -> "Draw"
+    BaseballGameResult.Win -> "승"
+    BaseballGameResult.Loss -> "패"
+    BaseballGameResult.Draw -> "무"
 }
