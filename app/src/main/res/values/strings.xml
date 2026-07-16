@@ -135,6 +135,10 @@
     <string name="friend_profile_recent_logs_title">최근 직관 기록</string>
     <string name="friend_profile_recent_logs_empty">공유된 직관 기록이 아직 없어요.</string>
     <string name="ranking_title">랭킹</string>
+    <string name="ranking_subtitle">실시간 승률 랭킹</string>
+    <string name="ranking_hero_label">내 순위</string>
+    <string name="ranking_hero_title">현재 내 순위</string>
+    <string name="ranking_me_badge">나</string>
     <string name="ranking_body">나와 맞친구의 승률, 경기 수, 승수를 비교해보세요.</string>
     <string name="ranking_my_rank">현재 내 순위: %1$d위</string>
     <string name="ranking_my_entry">%1$s · %2$s · %3$s</string>
