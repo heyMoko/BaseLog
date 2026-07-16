@@ -42,8 +42,8 @@
     <string name="home_recent_logs_empty">Your recent baseball logs will appear here after you save a game day.</string>
     <string name="home_recent_logs_opponent">vs %1$s</string>
     <string name="home_view_logs">View logs</string>
-    <string name="home_cta_title">직관 다녀오셨나요?</string>
-    <string name="home_cta_body">오늘의 직관 결과를 바로 남기고 승률에 반영해보세요.</string>
+    <string name="home_cta_title">직관 기록 남기셨나요?</string>
+    <string name="home_cta_body">오늘의 직관 결과를 바로 기록하고 승률에 반영해보세요.</string>
     <string name="home_cta_action">기록하러 가기</string>
     <string name="home_profile_unavailable_title">We couldn\'t load your profile</string>
     <string name="home_profile_unavailable_body">Your session is active, but the saved profile is missing or incomplete. Open My Page and finish profile recovery before continuing.</string>
@@ -137,7 +137,7 @@
     <string name="ranking_title">Ranking</string>
     <string name="ranking_body">Compare win rate, total games, and wins across you and your mutual friends.</string>
     <string name="ranking_my_rank">Your current rank: #%1$d</string>
-    <string name="ranking_my_entry">%1$s • %2$s • %3$s</string>
+    <string name="ranking_my_entry">%1$s · %2$s · %3$s</string>
     <string name="ranking_my_rank_empty">Your ranking will appear after leaderboard data is loaded.</string>
     <string name="ranking_empty">Add mutual friends and game logs to populate the ranking tab.</string>
     <string name="my_page_title">My Page</string>

@@ -43,7 +43,7 @@ fun MainRoute(
     val mainNavController = rememberNavController()
     val backStackEntry by mainNavController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
-    val selectedTab = MainTab.entries.firstOrNull { it.route == currentRoute } ?: startTab
+    val selectedTab = MainTab.entries.firstOrNull { it.route == currentRoute }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -52,15 +52,22 @@ fun MainRoute(
             NavigationBar {
                 MainTab.entries.forEach { tab ->
                     NavigationBarItem(
-                        selected = selectedTab == tab,
+                        selected = selectedTab == tab || (selectedTab == null && startTab == tab),
                         onClick = {
-                            if (selectedTab != tab) {
-                                mainNavController.navigate(tab.route) {
-                                    popUpTo(mainNavController.graph.findStartDestination().id) {
-                                        saveState = true
+                            if (currentRoute != tab.route) {
+                                val restoredFromBackStack = mainNavController.popBackStack(
+                                    route = tab.route,
+                                    inclusive = false
+                                )
+
+                                if (!restoredFromBackStack) {
+                                    mainNavController.navigate(tab.route) {
+                                        popUpTo(mainNavController.graph.findStartDestination().id) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
                                     }
-                                    launchSingleTop = true
-                                    restoreState = true
                                 }
                             }
                         },
