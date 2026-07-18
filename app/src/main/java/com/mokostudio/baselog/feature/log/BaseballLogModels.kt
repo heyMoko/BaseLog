@@ -40,3 +40,9 @@ data class BaseballLogDraft(
     val opponentTeam: BaseballTeam,
     val result: BaseballGameResult
 )
+
+fun WinRateSummary.toKoreanRecordText(): String? {
+    if (!hasGames) return null
+
+    return "${wins}승 ${losses}패 ${draws}무"
+}

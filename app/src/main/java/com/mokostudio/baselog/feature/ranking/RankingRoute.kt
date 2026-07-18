@@ -923,7 +923,7 @@ private fun RankingScreenPreview() {
                             nickname = "moko",
                             favoriteTeamName = "KT Wiz",
                             value = "100%",
-                            supporting = "4W 0L 1D",
+                            supporting = "4승 0패 1무",
                             isCurrentUser = false
                         ),
                         RankedFriendLeaderboardEntry(
@@ -932,7 +932,7 @@ private fun RankingScreenPreview() {
                             nickname = "koma",
                             favoriteTeamName = "Hanwha Eagles",
                             value = "50%",
-                            supporting = "1W 1L 0D",
+                            supporting = "1승 1패 0무",
                             isCurrentUser = true
                         ),
                         RankedFriendLeaderboardEntry(
@@ -941,7 +941,7 @@ private fun RankingScreenPreview() {
                             nickname = "player3",
                             favoriteTeamName = "LG Twins",
                             value = "60%",
-                            supporting = "3W 2L 0D",
+                            supporting = "3승 2패 0무",
                             isCurrentUser = false
                         ),
                         RankedFriendLeaderboardEntry(
@@ -950,7 +950,7 @@ private fun RankingScreenPreview() {
                             nickname = "slayer7",
                             favoriteTeamName = "Samsung Lions",
                             value = "50%",
-                            supporting = "3W 3L 0D",
+                            supporting = "3승 3패 0무",
                             isCurrentUser = false
                         )
                     ),
@@ -963,7 +963,7 @@ private fun RankingScreenPreview() {
                     nickname = "koma",
                     favoriteTeamName = "Hanwha Eagles",
                     value = "50%",
-                    supporting = "1W 1L 0D",
+                    supporting = "1승 1패 0무",
                     isCurrentUser = true
                 )
             ),

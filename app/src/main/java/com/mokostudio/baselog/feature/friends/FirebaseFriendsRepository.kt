@@ -180,7 +180,7 @@ class FirebaseFriendsRepository @Inject constructor(
             .awaitDocumentSnapshot()
 
         val request = requestDocument.toIncomingFriendRequest()
-            ?: error("We couldn't find this friend request.")
+            ?: error("친구 요청을 찾지 못했어요.")
         val recipientId = requestDocument.getString(FIELD_RECIPIENT_ID)
         val status = requestDocument.getString(FIELD_STATUS)
         if (recipientId != currentUserId || status != FRIEND_REQUEST_STATUS_PENDING) {

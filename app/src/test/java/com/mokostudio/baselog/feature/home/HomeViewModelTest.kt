@@ -102,7 +102,7 @@ class HomeViewModelTest {
         assertTrue(viewModel.uiState.value.logSummary.hasLogs)
         assertEquals(4, viewModel.uiState.value.logSummary.totalGames)
         assertEquals(66, viewModel.uiState.value.logSummary.overallWinRatePercent)
-        assertEquals("1W 1L 1D", viewModel.uiState.value.logSummary.currentYearRecord)
+        assertEquals("1승 1패 1무", viewModel.uiState.value.logSummary.currentYearRecord)
         assertEquals(2, viewModel.uiState.value.logSummary.recentLogs.size)
         assertEquals("$currentYear-07-12", viewModel.uiState.value.logSummary.recentLogs.first().attendedDate)
         collectionJob.cancel()

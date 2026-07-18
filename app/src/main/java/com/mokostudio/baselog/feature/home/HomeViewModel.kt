@@ -6,6 +6,7 @@ import com.mokostudio.baselog.core.user.UserProfileRepository
 import com.mokostudio.baselog.feature.log.BaseballGameResult
 import com.mokostudio.baselog.feature.log.BaseballLogRepository
 import com.mokostudio.baselog.feature.log.WinRateCalculator
+import com.mokostudio.baselog.feature.log.toKoreanRecordText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.LocalDate
 import javax.inject.Inject
@@ -43,11 +44,11 @@ class HomeViewModel @Inject constructor(
                     logSummary = HomeLogSummary(
                         totalGames = logs.size,
                         overallWinRatePercent = overallSummary.winRatePercent,
-                        overallRecord = overallSummary.toRecordText(),
+                        overallRecord = overallSummary.toKoreanRecordText(),
                         overallMessage = overallSummary.message,
                         currentYear = currentYear,
                         currentYearWinRatePercent = yearlySummary.winRatePercent,
-                        currentYearRecord = yearlySummary.toRecordText(),
+                        currentYearRecord = yearlySummary.toKoreanRecordText(),
                         recentLogs = logs.take(2).map { log ->
                             HomeRecentLog(
                                 id = log.id,
@@ -97,9 +98,3 @@ data class HomeRecentLog(
     val opponentTeamName: String,
     val result: BaseballGameResult
 )
-
-private fun com.mokostudio.baselog.feature.log.WinRateSummary.toRecordText(): String? {
-    if (!hasGames) return null
-
-    return "${wins}W ${losses}L ${draws}D"
-}

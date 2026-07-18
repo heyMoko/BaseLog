@@ -90,7 +90,7 @@ class LogEditorViewModelTest {
         viewModel.saveLog()
 
         assertEquals(
-            "Select a result before saving this game.",
+            "경기 결과를 선택해주세요.",
             viewModel.uiState.value.errorMessage
         )
     }
@@ -116,7 +116,7 @@ class LogEditorViewModelTest {
         viewModel.onOpponentTeamSelected(BaseballTeam.LgTwins)
 
         assertEquals(
-            "Your team cannot be selected as the opposing team.",
+            "응원팀은 상대 팀으로 선택할 수 없어요.",
             viewModel.uiState.value.errorMessage
         )
         assertEquals(null, viewModel.uiState.value.opponentTeam)
@@ -146,7 +146,7 @@ class LogEditorViewModelTest {
         viewModel.saveLog()
 
         assertEquals(
-            "Your team cannot be selected as the opposing team.",
+            "응원팀은 상대 팀으로 선택할 수 없어요.",
             viewModel.uiState.value.errorMessage
         )
         assertEquals(null, logRepository.createdDraft)

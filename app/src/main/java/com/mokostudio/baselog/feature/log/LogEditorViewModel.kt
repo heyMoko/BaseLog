@@ -223,9 +223,9 @@ enum class LogEditorMode {
     Edit
 }
 
-private const val LOG_EDITOR_ERROR_OPPONENT = "Choose the opposing team before saving this game."
-private const val LOG_EDITOR_ERROR_SAME_TEAM = "Your team cannot be selected as the opposing team."
-private const val LOG_EDITOR_ERROR_RESULT = "Select a result before saving this game."
-private const val LOG_EDITOR_ERROR_UNKNOWN = "We couldn't save this game log. Try again."
-private const val LOG_EDITOR_ERROR_DELETE_UNKNOWN = "We couldn't delete this game log. Try again."
-private const val LOG_EDITOR_ERROR_NOT_FOUND = "We couldn't find this game log. Return to the list and try again."
+private const val LOG_EDITOR_ERROR_OPPONENT = "상대 팀을 선택해주세요."
+private const val LOG_EDITOR_ERROR_SAME_TEAM = "응원팀은 상대 팀으로 선택할 수 없어요."
+private const val LOG_EDITOR_ERROR_RESULT = "경기 결과를 선택해주세요."
+private const val LOG_EDITOR_ERROR_UNKNOWN = "직관 기록을 저장하지 못했어요. 다시 시도해주세요."
+private const val LOG_EDITOR_ERROR_DELETE_UNKNOWN = "직관 기록을 삭제하지 못했어요. 다시 시도해주세요."
+private const val LOG_EDITOR_ERROR_NOT_FOUND = "직관 기록을 찾지 못했어요. 목록으로 돌아가 다시 시도해주세요."

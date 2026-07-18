@@ -119,4 +119,4 @@ private fun List<com.mokostudio.baselog.feature.log.BaseballLogEntry>.toYearlySu
 }
 private const val CURRENT_USER_ENTRY_ID = "current-user"
 private const val FRIEND_LEADERBOARD_PROFILE_ERROR =
-    "We couldn't load your profile for the leaderboard right now."
+    "랭킹에 사용할 내 프로필을 불러오지 못했어요."

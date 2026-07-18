@@ -1,6 +1,7 @@
 package com.mokostudio.baselog.feature.friends
 
 import com.mokostudio.baselog.feature.log.WinRateSummary
+import com.mokostudio.baselog.feature.log.toKoreanRecordText
 
 data class FriendLeaderboardUiState(
     val entries: List<RankedFriendLeaderboardEntry> = emptyList(),
@@ -60,7 +61,7 @@ fun List<FriendLeaderboardEntry>.toRankedEntries(
                 LeaderboardMetric.TotalGames -> summary.totalGames.toString()
                 LeaderboardMetric.Wins -> summary.wins.toString()
             },
-            supporting = "${summary.wins}W ${summary.losses}L ${summary.draws}D",
+            supporting = summary.toKoreanRecordText() ?: "아직 기록이 없어요",
             isCurrentUser = sortValue.entry.isCurrentUser
         )
     }

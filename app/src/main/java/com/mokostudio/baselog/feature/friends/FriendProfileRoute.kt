@@ -33,6 +33,7 @@ import com.mokostudio.baselog.core.user.BaseballTeam
 import com.mokostudio.baselog.feature.log.BaseballGameResult
 import com.mokostudio.baselog.feature.log.BaseballLogEntry
 import com.mokostudio.baselog.feature.log.WinRateSummary
+import com.mokostudio.baselog.feature.log.toKoreanRecordText
 import com.mokostudio.baselog.ui.theme.BaseLogTheme
 import java.time.LocalDate
 
@@ -161,7 +162,7 @@ internal fun FriendProfileScreen(
                     primaryLabel = stringResource(id = R.string.friend_profile_overall_win_rate),
                     secondaryLabel = stringResource(id = R.string.friend_profile_total_games),
                     secondaryValue = uiState.overallSummary.totalGames.toString(),
-                    recordText = overallRecordText(uiState.overallSummary),
+                    recordText = uiState.overallSummary.toKoreanRecordText(),
                     message = uiState.overallSummary.message
                 )
             }
@@ -207,7 +208,7 @@ internal fun FriendProfileScreen(
                         ),
                         secondaryLabel = stringResource(id = R.string.friend_profile_total_games),
                         secondaryValue = summary.totalGames.toString(),
-                        recordText = overallRecordText(summary),
+                        recordText = summary.toKoreanRecordText(),
                         message = summary.message
                     )
                 }
@@ -330,12 +331,6 @@ private fun StatSummaryCard(
     }
 }
 
-private fun overallRecordText(summary: WinRateSummary): String? {
-    if (!summary.hasGames) return null
-
-    return "${summary.wins}W ${summary.losses}L ${summary.draws}D"
-}
-
 private fun BaseballGameResult.displayName(): String = when (this) {
     BaseballGameResult.Win -> "승"
     BaseballGameResult.Loss -> "패"
@@ -363,7 +358,7 @@ private fun FriendProfileScreenPreview() {
                     wins = 3,
                     losses = 1,
                     winRatePercent = 75,
-                    message = "Odds feel pretty good today."
+                    message = "오늘도 이길 확률이 꽤 높겠는데요?"
                 ),
                 selectedYearSummary = WinRateSummary(
                     year = 2026,
@@ -371,7 +366,7 @@ private fun FriendProfileScreenPreview() {
                     wins = 2,
                     losses = 1,
                     winRatePercent = 66,
-                    message = "Your game-day instincts are solid."
+                    message = "나쁘지 않은 직관 감각이에요."
                 ),
                 recentLogs = listOf(
                     BaseballLogEntry(
