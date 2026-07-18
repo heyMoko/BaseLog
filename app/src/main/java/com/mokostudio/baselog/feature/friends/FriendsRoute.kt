@@ -1,22 +1,39 @@
 package com.mokostudio.baselog.feature.friends
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.DeleteOutline
+import androidx.compose.material.icons.outlined.Groups
+import androidx.compose.material.icons.outlined.Inbox
+import androidx.compose.material.icons.outlined.PersonAdd
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -26,8 +43,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -36,7 +57,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mokostudio.baselog.R
 import com.mokostudio.baselog.core.user.BaseballTeam
 import com.mokostudio.baselog.ui.theme.BaseLogTheme
+import com.mokostudio.baselog.ui.theme.BorderLight
 import com.mokostudio.baselog.ui.theme.Navy900
+import com.mokostudio.baselog.ui.theme.Orange500
+import com.mokostudio.baselog.ui.theme.SurfaceLight
+import com.mokostudio.baselog.ui.theme.TextMuted
+import com.mokostudio.baselog.ui.theme.White
 
 @Composable
 fun FriendsRoute(
@@ -81,6 +107,11 @@ internal fun FriendsScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(Color(0xFFFFFBF7), SurfaceLight, White)
+                )
+            )
             .padding(innerPadding)
     ) {
         if (uiState.isLoading) {
@@ -98,80 +129,27 @@ internal fun FriendsScreen(
             }
 
             item {
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(
-                        modifier = Modifier.padding(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.friends_search_label),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        OutlinedTextField(
-                            value = uiState.searchQuery,
-                            onValueChange = onSearchQueryChanged,
-                            modifier = Modifier.fillMaxWidth(),
-                            label = {
-                                Text(text = stringResource(id = R.string.friends_search_label))
-                            },
-                            placeholder = {
-                                Text(text = stringResource(id = R.string.friends_search_placeholder))
-                            },
-                            singleLine = true,
-                            enabled = !uiState.isSearching
-                        )
-                        Button(
-                            onClick = onSearchClick,
-                            enabled = !uiState.isSearching,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            if (uiState.isSearching) {
-                                CircularProgressIndicator(
-                                    color = MaterialTheme.colorScheme.onPrimary,
-                                    strokeWidth = 2.dp
-                                )
-                            } else {
-                                Text(text = stringResource(id = R.string.friends_search_action))
-                            }
-                        }
-                        when {
-                            uiState.isSearchIdle -> {
-                                Text(
-                                    text = stringResource(id = R.string.friends_search_idle),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-
-                            uiState.searchResults.isEmpty() -> {
-                                Text(
-                                    text = stringResource(id = R.string.friends_search_empty),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-
-                            else -> {
-                                uiState.searchResults.forEach { result ->
-                                    FriendSearchCard(
-                                        result = result,
-                                        isProcessing = result.user.userId in uiState.actionInFlightIds,
-                                        onSendRequestClick = onSendRequestClick
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
+                FriendSearchSection(
+                    uiState = uiState,
+                    onSearchQueryChanged = onSearchQueryChanged,
+                    onSearchClick = onSearchClick,
+                    onSendRequestClick = onSendRequestClick
+                )
             }
 
             item {
-                SectionHeading(title = stringResource(id = R.string.friends_incoming_title))
+                SectionHeading(
+                    title = stringResource(id = R.string.friends_incoming_title),
+                    icon = Icons.Outlined.Inbox
+                )
             }
 
             if (uiState.incomingRequests.isEmpty()) {
                 item {
-                    EmptyCard(text = stringResource(id = R.string.friends_incoming_empty))
+                    EmptyCard(
+                        text = stringResource(id = R.string.friends_incoming_empty),
+                        icon = Icons.Outlined.Inbox
+                    )
                 }
             } else {
                 items(uiState.incomingRequests, key = { it.requestId }) { request ->
@@ -185,12 +163,18 @@ internal fun FriendsScreen(
             }
 
             item {
-                SectionHeading(title = stringResource(id = R.string.friends_list_title))
+                SectionHeading(
+                    title = stringResource(id = R.string.friends_list_title),
+                    icon = Icons.Outlined.Groups
+                )
             }
 
             if (uiState.friends.isEmpty()) {
                 item {
-                    EmptyCard(text = stringResource(id = R.string.friends_list_empty))
+                    EmptyCard(
+                        text = stringResource(id = R.string.friends_list_empty),
+                        icon = Icons.Outlined.Groups
+                    )
                 }
             } else {
                 items(uiState.friends, key = { it.userId }) { friend ->
@@ -209,11 +193,7 @@ internal fun FriendsScreen(
 
             uiState.errorMessage?.let { message ->
                 item {
-                    Text(
-                        text = message,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.error
-                    )
+                    ErrorCard(message = message)
                 }
             }
         }
@@ -273,22 +253,193 @@ private fun TopLevelTitle(title: String) {
 }
 
 @Composable
-private fun SectionHeading(title: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.titleLarge,
-        color = MaterialTheme.colorScheme.onBackground
-    )
+private fun FriendSearchSection(
+    uiState: FriendsUiState,
+    onSearchQueryChanged: (String) -> Unit,
+    onSearchClick: () -> Unit,
+    onSendRequestClick: (FriendSummary) -> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(28.dp),
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 0.dp,
+        shadowElevation = 4.dp
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                FriendsIconBubble(
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Outlined.PersonAdd,
+                            contentDescription = null,
+                            tint = Orange500
+                        )
+                    }
+                )
+                Spacer(modifier = Modifier.width(14.dp))
+                Text(
+                    text = stringResource(id = R.string.friends_search_label),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = Navy900,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            OutlinedTextField(
+                value = uiState.searchQuery,
+                onValueChange = onSearchQueryChanged,
+                modifier = Modifier.fillMaxWidth(),
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Outlined.Search,
+                        contentDescription = null
+                    )
+                },
+                placeholder = {
+                    Text(text = stringResource(id = R.string.friends_search_placeholder))
+                },
+                singleLine = true,
+                enabled = !uiState.isSearching,
+                shape = RoundedCornerShape(18.dp)
+            )
+
+            Button(
+                onClick = onSearchClick,
+                enabled = !uiState.isSearching,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(18.dp)
+            ) {
+                if (uiState.isSearching) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp,
+                        modifier = Modifier.size(20.dp)
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Outlined.Search,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = stringResource(id = R.string.friends_search_action))
+                }
+            }
+
+            when {
+                uiState.isSearchIdle -> {
+                    SearchMessage(text = stringResource(id = R.string.friends_search_idle))
+                }
+
+                uiState.searchResults.isEmpty() -> {
+                    SearchMessage(text = stringResource(id = R.string.friends_search_empty))
+                }
+
+                else -> {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        uiState.searchResults.forEach { result ->
+                            FriendSearchCard(
+                                result = result,
+                                isProcessing = result.user.userId in uiState.actionInFlightIds,
+                                onSendRequestClick = onSendRequestClick
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable
-private fun EmptyCard(text: String) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+private fun SectionHeading(
+    title: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        FriendsIconBubble(
+            icon = {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = Orange500
+                )
+            },
+            size = 36.dp
+        )
+        Spacer(modifier = Modifier.width(10.dp))
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            color = Navy900,
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
+private fun EmptyCard(
+    text: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        color = White,
+        border = BorderStroke(1.dp, BorderLight)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 18.dp, vertical = 18.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            FriendsIconBubble(
+                icon = {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = TextMuted
+                    )
+                },
+                containerColor = BorderLight.copy(alpha = 0.55f)
+            )
+            Spacer(modifier = Modifier.width(14.dp))
+            Text(
+                text = text,
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextMuted,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+@Composable
+private fun SearchMessage(text: String) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        color = White,
+        border = BorderStroke(1.dp, BorderLight.copy(alpha = 0.8f))
+    ) {
         Text(
             text = text,
-            modifier = Modifier.padding(20.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = TextMuted,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }
@@ -299,53 +450,21 @@ private fun FriendSearchCard(
     isProcessing: Boolean,
     onSendRequestClick: (FriendSummary) -> Unit
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+    FriendSurface {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = result.user.nickname, style = MaterialTheme.typography.titleMedium)
-            Text(
-                text = result.user.favoriteTeam.displayName,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary
+            FriendIdentity(
+                friend = result.user,
+                modifier = Modifier.weight(1f)
             )
-            if (result.user.bio.isNotBlank()) {
-                Text(
-                    text = result.user.bio,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            when {
-                result.isFriend -> {
-                    OutlinedButton(onClick = {}, enabled = false) {
-                        Text(text = stringResource(id = R.string.friends_already_friends))
-                    }
-                }
-
-                result.isRequestPending -> {
-                    OutlinedButton(onClick = {}, enabled = false) {
-                        Text(text = stringResource(id = R.string.friends_request_sent))
-                    }
-                }
-
-                else -> {
-                    Button(
-                        onClick = { onSendRequestClick(result.user) },
-                        enabled = !isProcessing
-                    ) {
-                        if (isProcessing) {
-                            CircularProgressIndicator(
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Text(text = stringResource(id = R.string.friends_send_request))
-                        }
-                    }
-                }
-            }
+            Spacer(modifier = Modifier.width(12.dp))
+            FriendSearchAction(
+                result = result,
+                isProcessing = isProcessing,
+                onSendRequestClick = onSendRequestClick
+            )
         }
     }
 }
@@ -357,24 +476,9 @@ private fun IncomingRequestCard(
     onAcceptClick: (String) -> Unit,
     onRejectClick: (String) -> Unit
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(text = request.requester.nickname, style = MaterialTheme.typography.titleMedium)
-            Text(
-                text = request.requester.favoriteTeam.displayName,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-            if (request.requester.bio.isNotBlank()) {
-                Text(
-                    text = request.requester.bio,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+    FriendSurface {
+        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            FriendIdentity(friend = request.requester)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -382,15 +486,29 @@ private fun IncomingRequestCard(
                 Button(
                     onClick = { onAcceptClick(request.requestId) },
                     enabled = !isProcessing,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(16.dp)
                 ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Check,
+                        contentDescription = null,
+                        modifier = Modifier.size(17.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
                     Text(text = stringResource(id = R.string.friends_accept))
                 }
                 OutlinedButton(
                     onClick = { onRejectClick(request.requestId) },
                     enabled = !isProcessing,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(16.dp)
                 ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Close,
+                        contentDescription = null,
+                        modifier = Modifier.size(17.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
                     Text(text = stringResource(id = R.string.friends_reject))
                 }
             }
@@ -405,39 +523,214 @@ private fun FriendCard(
     onViewProfileClick: () -> Unit,
     onRemoveClick: () -> Unit
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    FriendSurface {
+        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            FriendIdentity(friend = friend)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedButton(
+                    onClick = onViewProfileClick,
+                    enabled = !isProcessing,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.ChevronRight,
+                        contentDescription = null,
+                        modifier = Modifier.size(17.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(text = stringResource(id = R.string.friends_view_profile))
+                }
+                OutlinedButton(
+                    onClick = onRemoveClick,
+                    enabled = !isProcessing,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.DeleteOutline,
+                        contentDescription = null,
+                        modifier = Modifier.size(17.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(text = stringResource(id = R.string.friends_remove))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun FriendSearchAction(
+    result: FriendSearchResult,
+    isProcessing: Boolean,
+    onSendRequestClick: (FriendSummary) -> Unit
+) {
+    when {
+        result.isFriend -> {
+            StatusPill(text = stringResource(id = R.string.friends_already_friends))
+        }
+
+        result.isRequestPending -> {
+            StatusPill(text = stringResource(id = R.string.friends_request_sent))
+        }
+
+        else -> {
+            Button(
+                onClick = { onSendRequestClick(result.user) },
+                enabled = !isProcessing,
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                if (isProcessing) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp,
+                        modifier = Modifier.size(18.dp)
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Outlined.PersonAdd,
+                        contentDescription = null,
+                        modifier = Modifier.size(17.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(text = stringResource(id = R.string.friends_send_request))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun FriendIdentity(
+    friend: FriendSummary,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        FriendAvatar(nickname = friend.nickname)
+        Spacer(modifier = Modifier.width(12.dp))
         Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            Text(text = friend.nickname, style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = friend.nickname,
+                style = MaterialTheme.typography.titleMedium,
+                color = Navy900,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
             Text(
                 text = friend.favoriteTeam.displayName,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary
+                color = Orange500,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
             if (friend.bio.isNotBlank()) {
                 Text(
                     text = friend.bio,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = TextMuted,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
-            OutlinedButton(
-                onClick = onViewProfileClick,
-                enabled = !isProcessing,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(text = stringResource(id = R.string.friends_view_profile))
-            }
-            OutlinedButton(
-                onClick = onRemoveClick,
-                enabled = !isProcessing,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(text = stringResource(id = R.string.friends_remove))
-            }
         }
+    }
+}
+
+@Composable
+private fun FriendSurface(content: @Composable () -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        color = White,
+        border = BorderStroke(1.dp, BorderLight.copy(alpha = 0.9f)),
+        shadowElevation = 2.dp
+    ) {
+        Box(modifier = Modifier.padding(horizontal = 18.dp, vertical = 18.dp)) {
+            content()
+        }
+    }
+}
+
+@Composable
+private fun FriendAvatar(nickname: String) {
+    Box(
+        modifier = Modifier
+            .size(48.dp)
+            .clip(CircleShape)
+            .background(Color(0xFFFFEEE3)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = nickname.trim().firstOrNull()?.uppercaseChar()?.toString().orEmpty(),
+            style = MaterialTheme.typography.titleMedium,
+            color = Orange500,
+            fontWeight = FontWeight.ExtraBold,
+            textAlign = TextAlign.Center,
+            maxLines = 1
+        )
+    }
+}
+
+@Composable
+private fun StatusPill(text: String) {
+    Surface(
+        shape = RoundedCornerShape(999.dp),
+        color = BorderLight.copy(alpha = 0.65f)
+    ) {
+        Text(
+            text = text,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            style = MaterialTheme.typography.labelLarge,
+            color = TextMuted,
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
+private fun FriendsIconBubble(
+    icon: @Composable () -> Unit,
+    size: androidx.compose.ui.unit.Dp = 44.dp,
+    containerColor: Color = Color(0xFFFFEEE3)
+) {
+    Box(
+        modifier = Modifier
+            .size(size)
+            .clip(CircleShape)
+            .background(containerColor),
+        contentAlignment = Alignment.Center
+    ) {
+        icon()
+    }
+}
+
+@Composable
+private fun ErrorCard(message: String) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        color = Color(0xFFFFF2F0),
+        border = BorderStroke(1.dp, Color(0xFFFFD6CF))
+    ) {
+        Text(
+            text = message,
+            modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.error
+        )
     }
 }
 
@@ -455,7 +748,7 @@ private fun FriendsScreenPreview() {
                             userId = "u1",
                             nickname = "Moko",
                             favoriteTeam = BaseballTeam.LgTwins,
-                            bio = "Weekday baseball regular.",
+                            bio = "잠실 평일 경기 자주 가요.",
                             photoUrl = ""
                         ),
                         isFriend = false,
@@ -469,7 +762,7 @@ private fun FriendsScreenPreview() {
                             userId = "u2",
                             nickname = "Jin",
                             favoriteTeam = BaseballTeam.DoosanBears,
-                            bio = "Always at Jamsil.",
+                            bio = "두산 홈경기 직관러",
                             photoUrl = ""
                         )
                     )
